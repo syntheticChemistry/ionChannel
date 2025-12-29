@@ -138,14 +138,14 @@ impl CompositorBackend for CosmicBackend {
         }
 
         // Connect to session bus
-        let conn = zbus::Connection::session().await.map_err(|e| {
-            BackendError::ConnectionFailed(format!("D-Bus connection failed: {e}"))
-        })?;
+        let conn = zbus::Connection::session()
+            .await
+            .map_err(|e| BackendError::ConnectionFailed(format!("D-Bus connection failed: {e}")))?;
 
         // Create proxy to cosmic-comp
-        let proxy = CosmicCompProxy::new(&conn).await.map_err(|e| {
-            BackendError::ConnectionFailed(format!("Failed to create proxy: {e}"))
-        })?;
+        let proxy = CosmicCompProxy::new(&conn)
+            .await
+            .map_err(|e| BackendError::ConnectionFailed(format!("Failed to create proxy: {e}")))?;
 
         // Store connection and proxy
         *self.connection.write().await = Some(conn);
@@ -267,3 +267,5 @@ mod tests {
         }
     }
 }
+#[cfg(test)]
+mod input_tests;

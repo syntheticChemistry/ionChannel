@@ -1,256 +1,222 @@
 # ionChannel Documentation Index
 
-Complete guide to all ionChannel documentation.
+**Last Updated:** December 28, 2025  
+**Version:** 0.1.0  
+**Status:** Production Ready ✅
 
 ---
 
-## 🚀 Start Here
+## 📚 Quick Navigation
 
-**New to ionChannel? Read these in order:**
+### 🚀 Getting Started (Start Here!)
+1. **[README.md](README.md)** - Project overview and quick start
+2. **[QUICK_START.md](QUICK_START.md)** - Fastest way to get running
+3. **[STATUS.md](STATUS.md)** - Current project status and metrics
 
-1. **[QUICK_START.md](QUICK_START.md)** ⭐ - **Fastest way to get started!**
-2. **[README.md](README.md)** - Project overview
-3. **[AUTONOMOUS_PROVISIONING.md](AUTONOMOUS_PROVISIONING.md)** 🤖 - Zero-human-interaction provisioning
-4. **[STATUS.md](STATUS.md)** - Current implementation status
-5. **[PROJECT_COMPLETION_SUMMARY.md](PROJECT_COMPLETION_SUMMARY.md)** - Complete project summary
+### 🏗️ Core Architecture
+- **[specs/00_MASTER_OVERVIEW.md](specs/00_MASTER_OVERVIEW.md)** - Master specification
+- **[specs/07_CAPABILITY_BASED_SECURITY.md](specs/07_CAPABILITY_BASED_SECURITY.md)** - Capability system ✨
+- **[CAPABILITY_SYSTEM_FINAL.md](CAPABILITY_SYSTEM_FINAL.md)** - Implementation complete!
 
----
+### 🔐 Capability System (NEW!)
+- **[CAPABILITY_SYSTEM_FINAL.md](CAPABILITY_SYSTEM_FINAL.md)** - Executive summary
+- **[CAPABILITY_PHASE1_COMPLETE.md](CAPABILITY_PHASE1_COMPLETE.md)** - Implementation report
+- **[CAPABILITY_SYSTEM_IMPLEMENTATION.md](CAPABILITY_SYSTEM_IMPLEMENTATION.md)** - Technical deep dive
+- **[specs/07_CAPABILITY_BASED_SECURITY.md](specs/07_CAPABILITY_BASED_SECURITY.md)** - Full specification
 
-## 📊 Current Status
+### 🎯 Demonstrations
+- **[DEMO_GUIDE.md](DEMO_GUIDE.md)** - Complete demo guide
+- **[RUN_DEMO.sh](RUN_DEMO.sh)** - Automated demo script
+- **[VALIDATE_IONCHANNEL.sh](VALIDATE_IONCHANNEL.sh)** - Full validation
 
-### Quick Status
-- **[STATUS.md](STATUS.md)** - Living document with current metrics
-- **[PROJECT_COMPLETION_SUMMARY.md](PROJECT_COMPLETION_SUMMARY.md)** - Final comprehensive summary
-- **[QUICK_START.md](QUICK_START.md)** - What's ready to demo
+### 🧪 Testing & Validation
+- **[docs/testing/](docs/testing/)** - Test plans and results
+- **[tests/README.md](tests/README.md)** - Test suite overview
+- **[AUTONOMOUS_PROVISIONING.md](AUTONOMOUS_PROVISIONING.md)** - VM provisioning
 
-### Testing Documentation
-See [docs/testing/](docs/testing/) for test-specific documentation:
-- `MVP_TEST_RESULTS.md` - Complete MVP test results
-- `TESTING_PLAN_POPOS_WAYLAND.md` - Comprehensive test plan
+### 🔧 Integration Guides
+- **[BENCHSCALE_INTEGRATION.md](BENCHSCALE_INTEGRATION.md)** - benchScale v2.0.0
+- **[CAPABILITY_BASED_VM_DISCOVERY.md](CAPABILITY_BASED_VM_DISCOVERY.md)** - Primal discovery
+- **[SCREEN_CAPTURE_PIPEWIRE.md](SCREEN_CAPTURE_PIPEWIRE.md)** - PipeWire capture
 
-### Session Reports (Archived)
-See [docs/reports/](docs/reports/) for historical session reports:
-- Previous evolution sessions
-- Audit reports
-- Implementation summaries
-
----
-
-## 🏗️ Architecture
-
-### Core Architecture Documents
-- **[CAPABILITY_BASED_VM_DISCOVERY.md](CAPABILITY_BASED_VM_DISCOVERY.md)** - Discovery patterns (primal!)
-- **[BENCHSCALE_INTEGRATION.md](BENCHSCALE_INTEGRATION.md)** - benchScale v2.0.0 integration
-- **[SCREEN_CAPTURE_PIPEWIRE.md](SCREEN_CAPTURE_PIPEWIRE.md)** - PipeWire-first capture
-
-### Specifications
-See [specs/](specs/) for detailed specifications:
-- `00_MASTER_OVERVIEW.md` - Master overview
-- `01_ARCHITECTURE.md` - Architecture details
-- `02_PORTAL_SERVICE.md` - Portal service design
-- And more...
-
----
-
-## 🎮 Demonstrations
-
-### Quick Demo
-```bash
-./RUN_DEMO.sh
-```
-
-### Demo Documentation
-- **[DEMO_GUIDE.md](DEMO_GUIDE.md)** - Complete guide with troubleshooting
-- **[QUICK_START.md](QUICK_START.md)** - Quick reference
-
-### Example Demos
-```bash
-# Full E2E (recommended)
-./RUN_DEMO.sh
-
-# Discovery only
-cargo run -p ion-validation --example discover_and_provision --features libvirt
-
-# VM provisioning
-cargo run -p ion-validation --example create_working_vm --features libvirt
-```
-
----
-
-## 🔧 Development
-
-### Getting Started
-- **[QUICKSTART.md](QUICKSTART.md)** - Detailed build instructions
-- **[QUICK_START.md](QUICK_START.md)** - Fast start guide
+### 📋 Reference
+- **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)** - This file
+- **[PROJECT_COMPLETION_SUMMARY.md](PROJECT_COMPLETION_SUMMARY.md)** - Project overview
 - **[NEXT_STEPS.md](NEXT_STEPS.md)** - Future enhancements
 
-### Testing
-```bash
-# Run all tests
-cargo test --workspace
-
-# Run test suite
-./TEST_SUITE.sh
-
-# Check coverage
-./verify-evolution.sh
-```
-
 ---
 
-## 📚 By Topic
-
-### Remote Desktop
-- [README.md](README.md) - Overview and features
-- [SCREEN_CAPTURE_PIPEWIRE.md](SCREEN_CAPTURE_PIPEWIRE.md) - Capture architecture
-- [specs/02_PORTAL_SERVICE.md](specs/02_PORTAL_SERVICE.md) - Portal design
-
-### VM Provisioning
-- [CAPABILITY_BASED_VM_DISCOVERY.md](CAPABILITY_BASED_VM_DISCOVERY.md) - Discovery (primal!)
-- [BENCHSCALE_INTEGRATION.md](BENCHSCALE_INTEGRATION.md) - Integration details
-- [DEMO_GUIDE.md](DEMO_GUIDE.md) - Running VM demos
-
-### Validation & Testing
-- [DEMO_GUIDE.md](DEMO_GUIDE.md) - Test procedures
-- [STATUS.md](STATUS.md) - Test metrics
-
-### Configuration
-- [QUICK_START.md](QUICK_START.md) - Environment variables
-- [DEMO_GUIDE.md](DEMO_GUIDE.md) - Detailed configuration
-
----
-
-## 🎯 By Use Case
-
-### "I want to get started fast"
-→ **[QUICK_START.md](QUICK_START.md)** ⭐
-
-### "I want to run a demo"
-1. [QUICK_START.md](QUICK_START.md) - Demo options
-2. [DEMO_GUIDE.md](DEMO_GUIDE.md) - Complete guide
-3. `./RUN_DEMO.sh` - Run it!
-
-### "I want to understand the project"
-1. [README.md](README.md) - Overview
-2. [STATUS.md](STATUS.md) - Current state
-3. [CAPABILITY_BASED_VM_DISCOVERY.md](CAPABILITY_BASED_VM_DISCOVERY.md) - Architecture
-
-### "I want to build and deploy"
-1. [QUICKSTART.md](QUICKSTART.md) - Build instructions
-2. [QUICK_START.md](QUICK_START.md) - Quick reference
-3. [DEMO_GUIDE.md](DEMO_GUIDE.md) - Configuration
-
-### "I want to contribute"
-1. [README.md](README.md) - Architecture and principles
-2. [STATUS.md](STATUS.md) - Current status
-3. [NEXT_STEPS.md](NEXT_STEPS.md) - Future work
-
-### "I want detailed technical info"
-1. [CAPABILITY_BASED_VM_DISCOVERY.md](CAPABILITY_BASED_VM_DISCOVERY.md) - Discovery patterns
-2. [BENCHSCALE_INTEGRATION.md](BENCHSCALE_INTEGRATION.md) - Integration
-3. [SCREEN_CAPTURE_PIPEWIRE.md](SCREEN_CAPTURE_PIPEWIRE.md) - Capture
-4. [specs/](specs/) - Specifications
-
----
-
-## 📁 Documentation Structure
+## 🗂️ Documentation Structure
 
 ```
 ionChannel/
-├── QUICK_START.md                     # ⭐ Start here!
-├── README.md                          # Main overview
-├── QUICKSTART.md                      # Build & run
-├── STATUS.md                          # Current status
-├── DEMO_GUIDE.md                      # Complete demo guide
-├── CAPABILITY_BASED_VM_DISCOVERY.md   # Discovery architecture
-├── BENCHSCALE_INTEGRATION.md          # Integration details
-├── SCREEN_CAPTURE_PIPEWIRE.md         # Capture architecture
-├── NEXT_STEPS.md                      # Future enhancements
-├── DOCUMENTATION_INDEX.md             # This file
-├── docs/
-│   └── reports/                       # Session reports (archived)
-│       ├── READY_FOR_DEMO.md
-│       ├── FINAL_STATUS_COMPLETE.md
-│       ├── E2E_COMPLETE.md
-│       └── DEMONSTRATION_READY.md
-└── specs/                             # Technical specifications
-    ├── 00_MASTER_OVERVIEW.md
-    ├── 01_ARCHITECTURE.md
-    └── ...
+├── README.md                               # Project overview
+├── QUICK_START.md                          # Getting started guide
+├── STATUS.md                               # Current status
+│
+├── 🔐 Capability System (NEW!)
+│   ├── CAPABILITY_SYSTEM_FINAL.md          # Executive summary
+│   ├── CAPABILITY_PHASE1_COMPLETE.md       # Implementation report
+│   ├── CAPABILITY_SYSTEM_IMPLEMENTATION.md # Technical details
+│   └── CAPABILITY_EVOLUTION_ROADMAP.md     # Evolution plan
+│
+├── 📖 Specifications
+│   └── specs/
+│       ├── 00_MASTER_OVERVIEW.md           # Master spec
+│       ├── 01_PORTAL_REMOTE_DESKTOP.md     # Portal implementation
+│       ├── 02_COMPOSITOR_INPUT.md          # Compositor integration
+│       ├── 03_RUSTDESK_INTEGRATION.md      # RustDesk support
+│       ├── 04_PRELOGIN_RDP.md              # Pre-login RDP
+│       ├── 05_ECOSYSTEM_INTEGRATION.md     # Ecosystem
+│       ├── 06_PLATFORM_AGNOSTICISM.md      # Platform support
+│       └── 07_CAPABILITY_BASED_SECURITY.md # Capability system ✨
+│
+├── 🎯 Demonstrations
+│   ├── DEMO_GUIDE.md                       # Demo guide
+│   ├── RUN_DEMO.sh                         # Demo script
+│   └── VALIDATE_IONCHANNEL.sh              # Validation script
+│
+├── 🧪 Testing
+│   ├── docs/testing/                       # Test documentation
+│   ├── tests/README.md                     # Test suite overview
+│   └── AUTONOMOUS_PROVISIONING.md          # VM automation
+│
+├── 🔧 Integration
+│   ├── BENCHSCALE_INTEGRATION.md           # benchScale
+│   ├── CAPABILITY_BASED_VM_DISCOVERY.md    # Discovery patterns
+│   └── SCREEN_CAPTURE_PIPEWIRE.md          # Screen capture
+│
+├── 📋 Additional
+│   ├── DOCUMENTATION_INDEX.md              # This file
+│   ├── PROJECT_COMPLETION_SUMMARY.md       # Overview
+│   ├── NEXT_STEPS.md                       # Future work
+│   └── docs/                               # Extended docs
+│
+└── 💻 Code Examples
+    └── examples/
+        ├── basic_capability_grant.rs       # Basic usage
+        ├── ai_agent_registration.rs        # AI agents
+        └── portal_bridge_integration.rs    # Portal bridge
 ```
 
 ---
 
-## 🔍 Finding Specific Information
+## 🎓 Learning Paths
 
-### Questions & Answers
+### For New Users
+1. Start with **[README.md](README.md)**
+2. Run **[QUICK_START.md](QUICK_START.md)**
+3. Try **[RUN_DEMO.sh](RUN_DEMO.sh)**
+4. Read **[STATUS.md](STATUS.md)**
 
-**Q: How do I get started quickly?**  
-A: **[QUICK_START.md](QUICK_START.md)** ⭐
+### For Developers
+1. **[specs/00_MASTER_OVERVIEW.md](specs/00_MASTER_OVERVIEW.md)** - Architecture
+2. **[CAPABILITY_SYSTEM_FINAL.md](CAPABILITY_SYSTEM_FINAL.md)** - Capability system
+3. **[examples/](examples/)** - Code examples
+4. **[docs/](docs/)** - Extended documentation
 
-**Q: How do I run the demo?**  
-A: Run `./RUN_DEMO.sh` or see [DEMO_GUIDE.md](DEMO_GUIDE.md)
+### For AI Agents
+1. **[CAPABILITY_SYSTEM_FINAL.md](CAPABILITY_SYSTEM_FINAL.md)** - System overview
+2. **[examples/ai_agent_registration.rs](examples/ai_agent_registration.rs)** - Registration
+3. **[specs/07_CAPABILITY_BASED_SECURITY.md](specs/07_CAPABILITY_BASED_SECURITY.md)** - Specification
 
-**Q: What's the current project status?**  
-A: See [STATUS.md](STATUS.md)
-
-**Q: How does capability-based discovery work?**  
-A: See [CAPABILITY_BASED_VM_DISCOVERY.md](CAPABILITY_BASED_VM_DISCOVERY.md)
-
-**Q: How is benchScale integrated?**  
-A: See [BENCHSCALE_INTEGRATION.md](BENCHSCALE_INTEGRATION.md)
-
-**Q: How does screen capture work?**  
-A: See [SCREEN_CAPTURE_PIPEWIRE.md](SCREEN_CAPTURE_PIPEWIRE.md)
-
-**Q: What configuration options are available?**  
-A: See [QUICK_START.md](QUICK_START.md) or [DEMO_GUIDE.md](DEMO_GUIDE.md)
-
-**Q: How do I build from source?**  
-A: See [QUICKSTART.md](QUICKSTART.md)
-
-**Q: What are the next steps?**  
-A: See [NEXT_STEPS.md](NEXT_STEPS.md)
+### For Portal Implementers
+1. **[specs/01_PORTAL_REMOTE_DESKTOP.md](specs/01_PORTAL_REMOTE_DESKTOP.md)** - Portal spec
+2. **[CAPABILITY_SYSTEM_IMPLEMENTATION.md](CAPABILITY_SYSTEM_IMPLEMENTATION.md)** - Integration
+3. **[examples/portal_bridge_integration.rs](examples/portal_bridge_integration.rs)** - Bridge usage
 
 ---
 
-## 🚀 Quick Commands
+## 📊 Documentation Statistics
 
-```bash
-# Build everything
-cargo build --workspace --all-features
-
-# Run tests
-cargo test --workspace
-
-# Run full E2E demo
-./RUN_DEMO.sh
-
-# Run test suite
-./TEST_SUITE.sh
-
-# Quick VM test
-cargo run -p ion-validation --example create_working_vm --features libvirt
-
-# Discovery demo
-cargo run -p ion-validation --example discover_and_provision --features libvirt
-```
+- **Total Markdown Files:** 30+
+- **Specifications:** 8 (in specs/)
+- **Code Examples:** 3 (in examples/)
+- **Test Documentation:** 5+ (in docs/testing/)
+- **Integration Guides:** 3
+- **Architecture Docs:** 10+
 
 ---
 
-## 📝 Documentation Philosophy
+## 🔍 Finding Documentation
 
-### Principles
-- **Quick Start First** - Users want to get running fast
-- **Single Source of Truth** - No redundant docs
-- **Clear Navigation** - Easy to find what you need
-- **Living Documents** - Keep current, archive old
+### By Topic
+- **Capability System:** Search for "CAPABILITY" in filenames
+- **Testing:** Look in `docs/testing/` and `tests/`
+- **Specifications:** All in `specs/` directory
+- **Integration:** Files ending in "_INTEGRATION.md"
 
-### Organization
-- **Root:** Essential docs everyone needs
-- **docs/reports/:** Historical session reports
-- **specs/:** Technical specifications
+### By Status
+- **✨ NEW:** Capability system documents
+- **✅ COMPLETE:** Most specifications and guides
+- **📝 IN PROGRESS:** Future enhancements in NEXT_STEPS.md
+- **📚 REFERENCE:** Historical docs in `docs/archive/`
 
 ---
 
-**Most users should start with [QUICK_START.md](QUICK_START.md)!** ⭐
+## 🆕 Recent Updates (December 28, 2025)
+
+### Capability System (NEW!)
+- Added comprehensive capability-based security system
+- Created 6 production modules (2,606 LOC)
+- Wrote 3 working examples
+- Full documentation suite
+
+### Documentation Improvements
+- Updated README.md with capability system
+- Created CAPABILITY_SYSTEM_FINAL.md
+- Reorganized documentation index
+- Added learning paths
+
+### Status Updates
+- All 180 tests passing
+- Zero unsafe code maintained
+- Production ready status confirmed
+
+---
+
+## 📝 Contributing to Documentation
+
+When adding new documentation:
+
+1. **Follow naming conventions:**
+   - Specifications: `specs/##_TOPIC.md`
+   - Integration: `TOPIC_INTEGRATION.md`
+   - Status: `TOPIC_STATUS.md`
+
+2. **Update this index:**
+   - Add to appropriate section
+   - Include brief description
+   - Update statistics
+
+3. **Use consistent formatting:**
+   - Start with overview
+   - Include examples
+   - Link to related docs
+
+4. **Add to README.md** if it's a major feature
+
+---
+
+## 🔗 External Resources
+
+- **Repository:** https://github.com/DataScienceBioLab/ionChannel
+- **xdg-desktop-portal:** https://flatpak.github.io/xdg-desktop-portal/
+- **COSMIC Desktop:** https://github.com/pop-os/cosmic-epoch
+- **benchScale:** https://github.com/DataScienceBioLab/benchScale
+- **Wayland:** https://wayland.freedesktop.org/
+
+---
+
+## 💡 Tips for Navigation
+
+1. **Use CTRL+F** in this file to find topics
+2. **Check STATUS.md** for current state
+3. **Start with QUICK_START.md** if new
+4. **Read CAPABILITY_SYSTEM_FINAL.md** for latest feature
+5. **Browse examples/** for code samples
+
+---
+
+**Questions or suggestions?** Contact: contact@datasciencebiolab.dev
+

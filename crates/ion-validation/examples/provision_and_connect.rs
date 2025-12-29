@@ -5,8 +5,6 @@
 //! 2. Install RustDesk
 //! 3. Get connection ID
 
-
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     #[cfg(not(feature = "libvirt"))]

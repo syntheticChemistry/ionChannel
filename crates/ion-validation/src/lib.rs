@@ -52,6 +52,11 @@ pub mod errors;
 pub mod events;
 pub mod orchestrator;
 pub mod providers;
+pub mod test_config;
+
+// benchScale-integrated modules
+#[cfg(feature = "benchscale")]
+pub mod rustdesk;
 
 #[cfg(feature = "libvirt")]
 pub mod impls;

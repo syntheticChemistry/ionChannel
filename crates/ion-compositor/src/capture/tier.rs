@@ -275,7 +275,7 @@ impl TierSelector {
             "{}/pipewire-0",
             std::env::var("XDG_RUNTIME_DIR").unwrap_or_default()
         );
-        
+
         if !std::path::Path::new(&pw_socket).exists() {
             debug!("PipeWire socket not found at {}", pw_socket);
             return false;

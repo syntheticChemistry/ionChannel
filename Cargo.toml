@@ -128,9 +128,14 @@ publish = false
 ion-core.workspace = true
 ion-portal.workspace = true
 ion-compositor.workspace = true
+ion-validation = { path = "crates/ion-validation", optional = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time", "sync"] }
 tracing.workspace = true
 tracing-subscriber.workspace = true
+uuid = { version = "1.11", features = ["v4"] }
+anyhow.workspace = true
+chrono = "0.4"
+rand = "0.8"
 benchscale = { path = "../benchScale", features = ["libvirt"], optional = true }
 
 [dev-dependencies]
@@ -140,16 +145,8 @@ benchscale = { path = "../benchScale", features = ["libvirt"] }
 
 [features]
 default = []
-benchscale = ["dep:benchscale"]
+benchscale = ["dep:benchscale", "ion-validation/benchscale"]
 libvirt = ["benchscale", "benchscale/libvirt"]
-
-[[example]]
-name = "full_stack_demo"
-path = "examples/full_stack_demo.rs"
-
-[[example]]
-name = "smithay_integration"
-path = "examples/smithay_integration.rs"
 
 [[bench]]
 name = "performance"

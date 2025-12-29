@@ -17,14 +17,14 @@ pub struct RustDeskProvider {
 impl RustDeskProvider {
     /// Create a new RustDesk provider with environment-driven config
     pub fn new() -> Self {
-        let version = std::env::var("RUSTDESK_VERSION")
-            .unwrap_or_else(|_| "1.2.3".to_string());
-        
-        let download_url = std::env::var("RUSTDESK_DOWNLOAD_URL")
-            .unwrap_or_else(|_| format!(
+        let version = std::env::var("RUSTDESK_VERSION").unwrap_or_else(|_| "1.2.3".to_string());
+
+        let download_url = std::env::var("RUSTDESK_DOWNLOAD_URL").unwrap_or_else(|_| {
+            format!(
                 "https://github.com/rustdesk/rustdesk/releases/download/{}/rustdesk-{}-x86_64.deb",
                 version, version
-            ));
+            )
+        });
 
         Self {
             download_url,
@@ -96,11 +96,11 @@ impl RemoteDesktop for RustDeskProvider {
         }
 
         // Download and install RustDesk
-        info!("Downloading RustDesk version {} from {}", self.version, self.download_url);
-        let download_cmd = format!(
-            "wget -q {} -O /tmp/rustdesk.deb",
-            self.download_url
+        info!(
+            "Downloading RustDesk version {} from {}",
+            self.version, self.download_url
         );
+        let download_cmd = format!("wget -q {} -O /tmp/rustdesk.deb", self.download_url);
 
         let (download_exit, _stdout, download_stderr) =
             self.exec_ssh(&mut ssh, &download_cmd).await?;

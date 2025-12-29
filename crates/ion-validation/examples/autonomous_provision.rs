@@ -18,7 +18,7 @@
 //! NO PASSWORDS. NO CONSOLE. NO MANUAL STEPS.
 
 use anyhow::Result;
-use ion_deploy::autonomous::{AutonomousProvisioner, AutonomousProvisionConfig};
+use ion_deploy::autonomous::{AutonomousProvisionConfig, AutonomousProvisioner};
 use tracing_subscriber;
 
 #[tokio::main]
@@ -44,10 +44,7 @@ async fn main() -> Result<()> {
         vcpus: 2,
         disk_gb: 10,
         username: "ubuntu".to_string(),
-        packages: vec![
-            "git".to_string(),
-            "build-essential".to_string(),
-        ],
+        packages: vec!["git".to_string(), "build-essential".to_string()],
         ..Default::default()
     };
 
@@ -80,10 +77,10 @@ async fn main() -> Result<()> {
                 Ok(output) => {
                     println!("\n📤 Command output:");
                     println!("{}", output);
-                }
+                },
                 Err(e) => {
                     eprintln!("⚠️  Command failed: {}", e);
-                }
+                },
             }
 
             println!("\n🧹 Cleaning up...");
@@ -99,7 +96,7 @@ async fn main() -> Result<()> {
             println!("  ✅ No manual SSH configuration");
             println!("  ✅ AI working on behalf of humans");
             println!("════════════════════════════════════════════════════════════════\n");
-        }
+        },
         Err(e) => {
             eprintln!("\n❌ Autonomous provisioning failed: {}", e);
             eprintln!("\n💡 Common issues:");
@@ -108,9 +105,8 @@ async fn main() -> Result<()> {
             eprintln!("   • Permissions (add user to libvirt group)");
             eprintln!("\n📖 See DEPLOYMENT.md for setup instructions\n");
             return Err(e);
-        }
+        },
     }
 
     Ok(())
 }
-

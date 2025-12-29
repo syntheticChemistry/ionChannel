@@ -29,6 +29,7 @@
 )]
 
 pub mod backend;
+pub mod capabilities;
 pub mod device;
 pub mod discovery;
 pub mod error;

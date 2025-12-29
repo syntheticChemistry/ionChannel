@@ -56,7 +56,7 @@ async fn main() -> anyhow::Result<()> {
     println!("═══════════════════════════════════════════════════════════════════════\n");
 
     let vm_registry = VmBackendRegistry::new();
-    
+
     // Register available VM providers
     println!("Registering VM backend providers...");
     let libvirt_provider = Arc::new(LibvirtProvider::new());
@@ -66,7 +66,7 @@ async fn main() -> anyhow::Result<()> {
     // Discover available backends (parallel)
     println!("Discovering available backends (parallel checks)...");
     let available = vm_registry.find_available().await;
-    
+
     if available.is_empty() {
         println!("❌ No VM backends available!");
         println!("\n💡 To enable libvirt:");
@@ -85,34 +85,33 @@ async fn main() -> anyhow::Result<()> {
     // Check health status
     println!("Checking health status...");
     let health_status = vm_registry.health_check().await;
-    
+
     for (id, health) in &health_status {
         match health {
             Ok(h) => {
-                println!("  {} - {}", 
-                    if h.healthy { "✅" } else { "⚠️ " }, 
-                    id
-                );
+                println!("  {} - {}", if h.healthy { "✅" } else { "⚠️ " }, id);
                 if let Some(version) = &h.version {
                     println!("     Version: {}", version);
                 }
-                println!("     VMs: {} available, {} running", 
-                    h.resources.vms_available, 
-                    h.resources.vms_running
+                println!(
+                    "     VMs: {} available, {} running",
+                    h.resources.vms_available, h.resources.vms_running
                 );
-            }
+            },
             Err(e) => {
                 println!("  ❌ {} - Error: {}", id, e);
-            }
+            },
         }
     }
     println!();
 
     // Create provisioner from best backend
     println!("Creating provisioner from best backend...");
-    let best_provider = vm_registry.find_best().await
+    let best_provider = vm_registry
+        .find_best()
+        .await
         .ok_or_else(|| anyhow::anyhow!("No VM backend available"))?;
-    
+
     let vm_provisioner = best_provider.create_provisioner().await?;
     println!("  ✓ Provisioner ready: {}\n", vm_provisioner.name());
 
@@ -123,11 +122,9 @@ async fn main() -> anyhow::Result<()> {
 
     // Set up capability registry
     let mut registry = CapabilityRegistry::new();
-    
+
     // Register all capability providers
-    registry.register_vm_provisioner(Arc::new(
-        LibvirtProvisioner::new().await?
-    ));
+    registry.register_vm_provisioner(Arc::new(LibvirtProvisioner::new().await?));
     registry.register_remote_desktop(Arc::new(RustDeskProvider::new()));
     registry.register_portal_deployer(Arc::new(IonChannelDeployer::new()));
 
@@ -138,7 +135,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Create validation plan
     println!("Creating validation plan...");
-    
+
     let vm_spec = VmSpec {
         name: "ionChannel-demo-vm".to_string(),
         ..Default::default()
@@ -182,7 +179,7 @@ async fn main() -> anyhow::Result<()> {
             ValidationEvent::Started { plan_id, .. } => {
                 println!("🚀 Validation started");
                 println!("   Plan ID: {}\n", plan_id);
-            }
+            },
 
             ValidationEvent::ProvisioningStarted { vm_name, .. } => {
                 current_phase = 1;
@@ -190,7 +187,7 @@ async fn main() -> anyhow::Result<()> {
                 println!("📦 PHASE 1: VM Provisioning");
                 println!("═══════════════════════════════════════════════════════════════════════");
                 println!("   Provisioning: {}", vm_name);
-            }
+            },
 
             ValidationEvent::VmProvisioned {
                 vm_id: id,
@@ -206,35 +203,43 @@ async fn main() -> anyhow::Result<()> {
                 println!("      Name: {}", vm_name);
                 println!("      IP: {}", ip);
                 println!("      Duration: {:?}", duration);
-            }
+            },
 
             ValidationEvent::InstallingPackage { package, .. } => {
                 if current_phase != 2 {
                     current_phase = 2;
-                    println!("\n═══════════════════════════════════════════════════════════════════════");
+                    println!(
+                        "\n═══════════════════════════════════════════════════════════════════════"
+                    );
                     println!("🖥️  PHASE 2: Remote Desktop Installation");
-                    println!("═══════════════════════════════════════════════════════════════════════");
+                    println!(
+                        "═══════════════════════════════════════════════════════════════════════"
+                    );
                 }
                 println!("   📦 Installing: {}", package);
-            }
+            },
 
-            ValidationEvent::PackageInstalled { package, version, .. } => {
+            ValidationEvent::PackageInstalled {
+                package, version, ..
+            } => {
                 println!("   ✅ Installed: {} v{}", package, version);
-            }
+            },
 
             ValidationEvent::RemoteDesktopReady { desktop_id, .. } => {
                 rustdesk_id = desktop_id.clone();
                 println!("   ✅ Remote Desktop ready!");
                 println!("      RustDesk ID: {}", desktop_id);
-            }
+            },
 
             ValidationEvent::DeployingPortal { target, .. } => {
                 current_phase = 3;
-                println!("\n═══════════════════════════════════════════════════════════════════════");
+                println!(
+                    "\n═══════════════════════════════════════════════════════════════════════"
+                );
                 println!("🚀 PHASE 3: Portal Deployment");
                 println!("═══════════════════════════════════════════════════════════════════════");
                 println!("   Deploying to: {}", target);
-            }
+            },
 
             ValidationEvent::PortalDeployed {
                 deployment_id: id,
@@ -245,28 +250,47 @@ async fn main() -> anyhow::Result<()> {
                 println!("   ✅ Portal deployed successfully!");
                 println!("      Deployment ID: {}", id);
                 println!("      Services: {}", services.join(", "));
-            }
+            },
 
-            ValidationEvent::VerificationComplete { success, details, .. } => {
+            ValidationEvent::VerificationComplete {
+                success, details, ..
+            } => {
                 current_phase = 4;
-                println!("\n═══════════════════════════════════════════════════════════════════════");
+                println!(
+                    "\n═══════════════════════════════════════════════════════════════════════"
+                );
                 println!("✔️  PHASE 4: E2E Verification");
                 println!("═══════════════════════════════════════════════════════════════════════");
-                println!("   Status: {}", if *success { "✅ SUCCESS" } else { "❌ FAILED" });
+                println!(
+                    "   Status: {}",
+                    if *success {
+                        "✅ SUCCESS"
+                    } else {
+                        "❌ FAILED"
+                    }
+                );
                 println!("   Details: {}", details);
-            }
+            },
 
-            ValidationEvent::PhaseComplete { phase, phase_name, duration, .. } => {
-                println!("   ⏱️  Phase {} ({}) complete in {:?}", phase, phase_name, duration);
-            }
+            ValidationEvent::PhaseComplete {
+                phase,
+                phase_name,
+                duration,
+                ..
+            } => {
+                println!(
+                    "   ⏱️  Phase {} ({}) complete in {:?}",
+                    phase, phase_name, duration
+                );
+            },
 
             ValidationEvent::Warning { message, .. } => {
                 println!("   ⚠️  Warning: {}", message);
-            }
+            },
 
             ValidationEvent::Error { message, .. } => {
                 println!("   ❌ Error: {}", message);
-            }
+            },
 
             ValidationEvent::Complete {
                 rustdesk_id: rid,
@@ -279,9 +303,13 @@ async fn main() -> anyhow::Result<()> {
                     rustdesk_id = rid.clone();
                 }
 
-                println!("\n═══════════════════════════════════════════════════════════════════════");
+                println!(
+                    "\n═══════════════════════════════════════════════════════════════════════"
+                );
                 println!("🎉 VALIDATION COMPLETE!");
-                println!("═══════════════════════════════════════════════════════════════════════\n");
+                println!(
+                    "═══════════════════════════════════════════════════════════════════════\n"
+                );
 
                 println!("📊 Summary:");
                 println!("   Total Duration: {:?}", total_duration);
@@ -304,12 +332,12 @@ async fn main() -> anyhow::Result<()> {
                 println!("   Installation: {:?}", metrics.installation_duration);
                 println!("   Deployment: {:?}", metrics.deployment_duration);
                 println!();
-            }
+            },
 
             _ => {
                 // Other events - show description
                 println!("   {}", event.description());
-            }
+            },
         }
     }
 
@@ -343,4 +371,3 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
-

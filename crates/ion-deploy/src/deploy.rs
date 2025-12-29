@@ -34,7 +34,8 @@ impl DeploymentConfig {
             source_dir,
             target_dir,
             build_command: "cargo build --release --all".to_string(),
-            install_command: "sudo cp target/release/xdg-desktop-portal-cosmic /usr/libexec/".to_string(),
+            install_command: "sudo cp target/release/xdg-desktop-portal-cosmic /usr/libexec/"
+                .to_string(),
         })
     }
 }
@@ -49,7 +50,8 @@ pub async fn deploy_to_vm(target: &VmInfo, skip_build: bool, skip_portal: bool) 
     let mut ssh = SshConnection::connect(&target.ip, username).await?;
 
     // Probe what the VM can do
-    let capabilities = ssh.capabilities()
+    let capabilities = ssh
+        .capabilities()
         .context("Failed to probe SSH capabilities")?;
 
     info!("Remote capabilities: {:?}", capabilities);
@@ -62,8 +64,10 @@ pub async fn deploy_to_vm(target: &VmInfo, skip_build: bool, skip_portal: bool) 
         transfer_files_sftp(&mut ssh, &config).await?;
     } else {
         info!("SFTP not available, skipping file transfer");
-        info!("  Suggestion: rsync -avz {} {}@{}:{}", 
-            config.source_dir, username, target.ip, config.target_dir);
+        info!(
+            "  Suggestion: rsync -avz {} {}@{}:{}",
+            config.source_dir, username, target.ip, config.target_dir
+        );
     }
 
     // 2. Build on VM (if not skipped)
@@ -89,16 +93,17 @@ async fn transfer_files_sftp(ssh: &mut SshConnection, config: &DeploymentConfig)
     info!("Transferring files via SFTP...");
 
     // Create target directory
-    ssh.execute(&format!("mkdir -p {}", config.target_dir)).await?;
+    ssh.execute(&format!("mkdir -p {}", config.target_dir))
+        .await?;
 
     // Transfer key files (discovered from local)
     let files_to_transfer = discover_files_to_transfer(&config.source_dir)?;
 
     for (local_path, relative_path) in files_to_transfer {
         let remote_path = format!("{}/{}", config.target_dir, relative_path);
-        
+
         debug!("Transferring {} -> {}", local_path.display(), remote_path);
-        
+
         // Create remote directory if needed
         if let Some(parent) = Path::new(&remote_path).parent() {
             if let Some(parent_str) = parent.to_str() {
@@ -152,10 +157,10 @@ async fn build_on_vm(ssh: &mut SshConnection, config: &DeploymentConfig) -> Resu
 
     // Change to project directory and build
     let command = format!("cd {} && {}", config.target_dir, config.build_command);
-    
+
     info!("Executing: {}", command);
     let output = ssh.execute(&command).await?;
-    
+
     debug!("Build output:\n{}", output);
 
     // Check if build succeeded
@@ -173,10 +178,10 @@ async fn deploy_portal(ssh: &mut SshConnection, config: &DeploymentConfig) -> Re
     info!("Deploying portal to system...");
 
     let command = format!("cd {} && {}", config.target_dir, config.install_command);
-    
+
     info!("Executing: {}", command);
     let output = ssh.execute(&command).await?;
-    
+
     debug!("Install output:\n{}", output);
 
     info!("✓ Portal deployed");
@@ -189,8 +194,10 @@ async fn verify_deployment(ssh: &mut SshConnection) -> Result<()> {
     info!("Verifying deployment...");
 
     // Check if portal binary exists
-    let output = ssh.execute("ls -lh /usr/libexec/xdg-desktop-portal-cosmic").await?;
-    
+    let output = ssh
+        .execute("ls -lh /usr/libexec/xdg-desktop-portal-cosmic")
+        .await?;
+
     if output.contains("No such file") {
         anyhow::bail!("Portal binary not found after deployment");
     }

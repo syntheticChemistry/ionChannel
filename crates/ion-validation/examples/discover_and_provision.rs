@@ -70,7 +70,14 @@ async fn main() -> anyhow::Result<()> {
         println!("Provider: {}", provider_id);
         match health_result {
             Ok(health) => {
-                println!("  Status: {}", if health.healthy { "✅ Healthy" } else { "⚠️  Unhealthy" });
+                println!(
+                    "  Status: {}",
+                    if health.healthy {
+                        "✅ Healthy"
+                    } else {
+                        "⚠️  Unhealthy"
+                    }
+                );
                 if let Some(version) = health.version {
                     println!("  Version: {}", version);
                 }
@@ -82,10 +89,10 @@ async fn main() -> anyhow::Result<()> {
                         println!("    ⚠ {}", warning);
                     }
                 }
-            }
+            },
             Err(e) => {
                 println!("  Status: ❌ Error - {}", e);
-            }
+            },
         }
         println!();
     }
@@ -139,10 +146,10 @@ async fn main() -> anyhow::Result<()> {
                                 println!("  • {} ({}): {:?}", vm.name, vm.id, vm.status);
                             }
                         }
-                    }
+                    },
                     Err(e) => {
                         println!("  ⚠️  Could not list VMs: {}", e);
-                    }
+                    },
                 }
                 println!();
 
@@ -174,14 +181,13 @@ async fn main() -> anyhow::Result<()> {
             } else {
                 println!("⚠️  Provisioner not available");
             }
-        }
+        },
         None => {
             println!("❌ No available backend found");
             println!("\n💡 Make sure libvirt is installed and running:");
             println!("   sudo systemctl status libvirtd");
-        }
+        },
     }
 
     Ok(())
 }
-

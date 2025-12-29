@@ -81,16 +81,18 @@ mod tests {
     #[test]
     #[cfg(feature = "mcp")]
     fn test_target_serialization() {
+        use crate::test_config;
+        
         let target = Target {
-            host: "192.168.122.54".to_string(),
+            host: test_config::test_vm_ip(),
             port: 22,
-            username: "iontest".to_string(),
+            username: test_config::test_ssh_user(),
             auth: SshAuth::Password {
                 password: "test".to_string(),
             },
         };
 
         let json = serde_json::to_string(&target).unwrap();
-        assert!(json.contains("192.168.122.54"));
+        assert!(json.contains(&test_config::test_vm_ip()));
     }
 }

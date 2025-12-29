@@ -47,7 +47,9 @@ impl Default for AutonomousProvisionConfig {
     fn default() -> Self {
         Self {
             vm_name: "autonomous-test-vm".to_string(),
-            base_image: PathBuf::from("/var/lib/libvirt/images/ubuntu-22.04-server-cloudimg-amd64.img"),
+            base_image: PathBuf::from(
+                "/var/lib/libvirt/images/ubuntu-22.04-server-cloudimg-amd64.img",
+            ),
             ram_mb: 4096,
             vcpus: 2,
             disk_gb: 20,
@@ -98,11 +100,17 @@ impl AutonomousProvisioner {
     ///
     /// Returns an error if any step of provisioning fails.
     pub async fn provision(&self) -> Result<(SshConnection, String)> {
-        info!("🤖 Starting autonomous VM provisioning: {}", self.config.vm_name);
+        info!(
+            "🤖 Starting autonomous VM provisioning: {}",
+            self.config.vm_name
+        );
 
         // Step 1: Generate SSH keys
         info!("🔑 Generating SSH keys...");
-        let keypair = self.ssh_manager.generate_key_pair(&self.config.vm_name).await?;
+        let keypair = self
+            .ssh_manager
+            .generate_key_pair(&self.config.vm_name)
+            .await?;
 
         // Step 2: Create working directory
         std::fs::create_dir_all(&self.config.work_dir)
@@ -127,9 +135,12 @@ impl AutonomousProvisioner {
         create_cloud_init_iso(&user_data_path, &meta_data_path, &cloud_init_iso)?;
 
         // Step 5: Create VM disk (copy base image)
-        let vm_disk = self.config.work_dir.join(format!("{}.qcow2", self.config.vm_name));
+        let vm_disk = self
+            .config
+            .work_dir
+            .join(format!("{}.qcow2", self.config.vm_name));
         info!("💾 Creating VM disk: {}", vm_disk.display());
-        
+
         let output = Command::new("qemu-img")
             .args([
                 "create",
@@ -188,14 +199,18 @@ impl AutonomousProvisioner {
 
         // Step 8: Wait for SSH to become available
         info!("🔌 Waiting for SSH to become available...");
-        self.wait_for_ssh(&ip, &keypair.private_key_path, 120).await?;
+        self.wait_for_ssh(&ip, &keypair.private_key_path, 120)
+            .await?;
 
         // Step 9: Connect via SSH using the generated key
         info!("🔗 Connecting via SSH...");
-        
+
         // Set SSH_AUTH_SOCK to use our key
-        std::env::set_var("SSH_AUTH_SOCK", keypair.private_key_path.display().to_string());
-        
+        std::env::set_var(
+            "SSH_AUTH_SOCK",
+            keypair.private_key_path.display().to_string(),
+        );
+
         let ssh = SshConnection::connect(&ip, &self.config.username).await?;
 
         info!("🎉 Autonomous provisioning complete! VM ready at {}", ip);
@@ -206,15 +221,10 @@ impl AutonomousProvisioner {
     /// Wait for the VM to get an IP address.
     async fn wait_for_vm_ip(&self, timeout_secs: u64) -> Result<String> {
         let start = std::time::Instant::now();
-        
+
         while start.elapsed().as_secs() < timeout_secs {
             let output = Command::new("virsh")
-                .args([
-                    "domifaddr",
-                    &self.config.vm_name,
-                    "--source",
-                    "lease",
-                ])
+                .args(["domifaddr", &self.config.vm_name, "--source", "lease"])
                 .output()?;
 
             if output.status.success() {
@@ -239,7 +249,7 @@ impl AutonomousProvisioner {
     /// Wait for SSH to become available.
     async fn wait_for_ssh(&self, ip: &str, _key_path: &Path, timeout_secs: u64) -> Result<()> {
         let start = std::time::Instant::now();
-        
+
         while start.elapsed().as_secs() < timeout_secs {
             match SshConnection::connect(ip, &self.config.username).await {
                 Ok(mut ssh) => {
@@ -247,10 +257,10 @@ impl AutonomousProvisioner {
                     if ssh.execute("echo test").await.is_ok() {
                         return Ok(());
                     }
-                }
+                },
                 Err(_) => {
                     // SSH not ready yet
-                }
+                },
             }
 
             sleep(Duration::from_secs(5)).await;
@@ -363,7 +373,7 @@ mod tests {
     #[test]
     fn test_config_base_image_path() {
         let config = AutonomousProvisionConfig::default();
-        
+
         // Should have a base image path
         assert!(config.base_image.to_string_lossy().contains("ubuntu"));
         assert!(config.base_image.to_string_lossy().contains("cloudimg"));
@@ -404,4 +414,3 @@ mod tests {
         assert!(debug_str.contains("vm_name"));
     }
 }
-

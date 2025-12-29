@@ -53,7 +53,7 @@ impl SshConnection {
 
         // Discover SSH port (try standard, then probe)
         let port = Self::discover_ssh_port(ip).await?;
-        
+
         debug!("Connecting to {}:{} as {}", ip, port, username);
 
         let config = client::Config::default();
@@ -68,7 +68,7 @@ impl SshConnection {
 
         let mut session = tokio::time::timeout(
             Duration::from_secs(10),
-            client::connect(Arc::new(config), socket_addr, sh)
+            client::connect(Arc::new(config), socket_addr, sh),
         )
         .await
         .context("Connection timeout")??;
@@ -143,17 +143,20 @@ impl SshConnection {
             if key_path.exists() {
                 debug!("Trying key file: {:?}", key_path);
                 if let Ok(key_pair) = russh_keys::load_secret_key(key_path, None) {
-                    match session.authenticate_publickey(username, Arc::new(key_pair)).await {
+                    match session
+                        .authenticate_publickey(username, Arc::new(key_pair))
+                        .await
+                    {
                         Ok(true) => {
                             debug!("Authenticated via key file: {:?}", key_path);
                             return Ok(true);
-                        }
+                        },
                         Ok(false) => {
                             debug!("Key rejected: {:?}", key_path);
-                        }
+                        },
                         Err(e) => {
                             warn!("Authentication error with {:?}: {}", key_path, e);
-                        }
+                        },
                     }
                 }
             }
@@ -172,10 +175,10 @@ impl SshConnection {
 
         // Test SFTP subsystem
         let supports_sftp = self.test_sftp_support().await;
-        
+
         let capabilities = SshCapabilities {
             supports_sftp,
-            supports_exec: true, // Required by SSH standard
+            supports_exec: true,  // Required by SSH standard
             supports_shell: true, // Required by SSH standard
             server_version,
         };
@@ -197,7 +200,7 @@ impl SshConnection {
                 } else {
                     false
                 }
-            }
+            },
             Err(_) => false,
         }
     }
@@ -222,18 +225,18 @@ impl SshConnection {
 
         loop {
             let msg = channel.wait().await.context("Failed to wait for message")?;
-            
+
             match msg {
                 russh::ChannelMsg::Data { ref data } => {
                     output.push_str(&String::from_utf8_lossy(data));
-                }
+                },
                 russh::ChannelMsg::ExitStatus { exit_status } => {
                     code = Some(exit_status);
-                }
+                },
                 russh::ChannelMsg::Eof => {
                     break;
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
 
@@ -266,21 +269,21 @@ impl SshConnection {
 
         // Read local file
         let data = tokio::fs::read(local_path).await?;
-        
+
         debug!("Read {} bytes from {}", data.len(), local_path.display());
 
         // For now, fallback to SCP-style transfer using cat
         // Full SFTP implementation would use the SFTP protocol
         let escaped_path = shell_escape::escape(remote_path.into());
         let command = format!("cat > {}", escaped_path);
-        
+
         drop(channel); // Close SFTP attempt
-        
+
         let mut channel = self.handle.channel_open_session().await?;
         channel.exec(true, command.as_bytes()).await?;
         channel.data(&data[..]).await?;
         channel.eof().await?;
-        
+
         // Wait for completion
         loop {
             if let Some(msg) = channel.wait().await {
@@ -290,9 +293,9 @@ impl SshConnection {
                             anyhow::bail!("File transfer failed with exit code {}", exit_status);
                         }
                         break;
-                    }
+                    },
                     russh::ChannelMsg::Eof => break,
-                    _ => {}
+                    _ => {},
                 }
             } else {
                 break;
@@ -326,11 +329,11 @@ pub async fn test_connection(ip: &str, username: &str) -> Result<bool> {
         Ok(_conn) => {
             info!("SSH connection test successful");
             Ok(true)
-        }
+        },
         Err(e) => {
             warn!("SSH connection test failed: {}", e);
             Ok(false)
-        }
+        },
     }
 }
 

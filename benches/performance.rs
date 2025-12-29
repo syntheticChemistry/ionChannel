@@ -3,7 +3,7 @@
 
 //! Performance benchmarks for ionChannel components.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use ion_compositor::rate_limiter::{RateLimiter, RateLimiterConfig};
 use ion_core::session::SessionId;
 use std::time::Duration;

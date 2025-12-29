@@ -22,8 +22,9 @@ impl IonChannelDeployer {
     /// Create a new ionChannel deployer with environment-driven config
     pub fn new() -> Self {
         Self {
-            repo_url: std::env::var("IONCHANNEL_REPO_URL")
-                .unwrap_or_else(|_| "https://github.com/DataScienceBioLab/ionChannel.git".to_string()),
+            repo_url: std::env::var("IONCHANNEL_REPO_URL").unwrap_or_else(|_| {
+                "https://github.com/DataScienceBioLab/ionChannel.git".to_string()
+            }),
             release_mode: std::env::var("IONCHANNEL_BUILD_RELEASE")
                 .map(|v| v == "true" || v == "1")
                 .unwrap_or(true),
@@ -36,7 +37,10 @@ impl IonChannelDeployer {
             SshAuth::Password { password } => password.clone(),
             SshAuth::Key { private_key_path } => {
                 // For now, still use password but log that key auth is preferred
-                info!("Key auth available at {:?}, using password for now", private_key_path);
+                info!(
+                    "Key auth available at {:?}, using password for now",
+                    private_key_path
+                );
                 return Err(ValidationError::SshConnectionFailed {
                     host: target.host.clone(),
                     port: target.port,
@@ -68,7 +72,11 @@ impl IonChannelDeployer {
     }
 
     /// Install system dependencies
-    async fn install_dependencies(&self, ssh: &mut SshClient, dependencies: &[String]) -> Result<()> {
+    async fn install_dependencies(
+        &self,
+        ssh: &mut SshClient,
+        dependencies: &[String],
+    ) -> Result<()> {
         info!("Installing {} system dependencies...", dependencies.len());
 
         // Update package list
@@ -81,7 +89,10 @@ impl IonChannelDeployer {
         // Install dependencies
         for dep in dependencies {
             info!("Installing dependency: {}", dep);
-            let install_cmd = format!("sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq {}", dep);
+            let install_cmd = format!(
+                "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq {}",
+                dep
+            );
             let (exit_code, _, stderr) = self.exec_ssh(ssh, &install_cmd).await?;
 
             if exit_code != 0 {
@@ -104,10 +115,13 @@ impl IonChannelDeployer {
         // 1. D-Bus service name (for portal services)
         // 2. Listening ports (netstat/ss)
         // 3. Environment/config files
-        
+
         if let Some(pid) = pid {
             // Try to find listening ports for this PID
-            let port_cmd = format!("ss -tlnp 2>/dev/null | grep 'pid={}' | awk '{{print $4}}'", pid);
+            let port_cmd = format!(
+                "ss -tlnp 2>/dev/null | grep 'pid={}' | awk '{{print $4}}'",
+                pid
+            );
             if let Ok((0, stdout, _)) = self.exec_ssh(ssh, &port_cmd).await {
                 let ports: Vec<&str> = stdout.lines().collect();
                 if !ports.is_empty() {
@@ -117,7 +131,7 @@ impl IonChannelDeployer {
                             let endpoint = match crate_name {
                                 name if name.contains("portal") => {
                                     format!("http://localhost:{}", port)
-                                }
+                                },
                                 _ => format!("tcp://localhost:{}", port),
                             };
                             info!("Discovered endpoint for {}: {}", crate_name, endpoint);
@@ -141,7 +155,10 @@ impl IonChannelDeployer {
         }
 
         // No endpoint discovered (service might not expose one yet)
-        debug!("No endpoint discovered for {} (this is okay for some services)", crate_name);
+        debug!(
+            "No endpoint discovered for {} (this is okay for some services)",
+            crate_name
+        );
         None
     }
 
@@ -159,9 +176,11 @@ impl IonChannelDeployer {
         // Remove old clone if exists
         let work_dir = PathBuf::from("/tmp/ionChannel");
         let work_dir_str = work_dir.display().to_string();
-        
+
         info!("Cleaning up old source...");
-        let _ = self.exec_ssh(ssh, &format!("rm -rf {}", work_dir_str)).await;
+        let _ = self
+            .exec_ssh(ssh, &format!("rm -rf {}", work_dir_str))
+            .await;
 
         // Clone repository
         info!("Cloning repository...");
@@ -179,9 +198,14 @@ impl IonChannelDeployer {
     }
 
     /// Build ionChannel crates on target
-    async fn build_crates(&self, ssh: &mut SshClient, work_dir: &PathBuf, crates: &[String]) -> Result<()> {
+    async fn build_crates(
+        &self,
+        ssh: &mut SshClient,
+        work_dir: &PathBuf,
+        crates: &[String],
+    ) -> Result<()> {
         let work_dir_str = work_dir.display().to_string();
-        
+
         info!("Building {} crates...", crates.len());
 
         // Check if Rust is installed
@@ -189,27 +213,31 @@ impl IonChannelDeployer {
         if exit_code != 0 {
             info!("Rust not found, installing...");
             // Install Rust via rustup
-            let install_rust = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y";
+            let install_rust =
+                "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y";
             self.exec_ssh(ssh, install_rust).await?;
-            
+
             // Source cargo env
             self.exec_ssh(ssh, "source $HOME/.cargo/env").await?;
         }
 
         // Build each crate
         let build_mode = if self.release_mode { "--release" } else { "" };
-        
+
         for crate_name in crates {
             info!("Building crate: {}", crate_name);
             let build_cmd = format!(
                 "cd {} && cargo build -p {} {} 2>&1",
                 work_dir_str, crate_name, build_mode
             );
-            
+
             let (exit_code, stdout, stderr) = self.exec_ssh(ssh, &build_cmd).await?;
 
             if exit_code != 0 {
-                warn!("Build warning/error for {}: {} {}", crate_name, stdout, stderr);
+                warn!(
+                    "Build warning/error for {}: {} {}",
+                    crate_name, stdout, stderr
+                );
                 // Continue - might still work
             } else {
                 info!("Successfully built {}", crate_name);
@@ -220,17 +248,26 @@ impl IonChannelDeployer {
     }
 
     /// Start ionChannel services
-    async fn start_services(&self, ssh: &mut SshClient, work_dir: &PathBuf, crates: &[String]) -> Result<Vec<DeployedService>> {
+    async fn start_services(
+        &self,
+        ssh: &mut SshClient,
+        work_dir: &PathBuf,
+        crates: &[String],
+    ) -> Result<Vec<DeployedService>> {
         let work_dir_str = work_dir.display().to_string();
-        let build_dir = if self.release_mode { "release" } else { "debug" };
-        
+        let build_dir = if self.release_mode {
+            "release"
+        } else {
+            "debug"
+        };
+
         info!("Starting {} services...", crates.len());
 
         let mut deployed_services = Vec::new();
 
         for crate_name in crates {
             info!("Starting service: {}", crate_name);
-            
+
             // Get binary name (strip ion- prefix for binary)
             let binary_name = crate_name.strip_prefix("ion-").unwrap_or(crate_name);
             let binary_path = format!("{}/target/{}/{}", work_dir_str, build_dir, binary_name);
@@ -254,7 +291,7 @@ impl IonChannelDeployer {
                 "nohup {} > /tmp/{}.log 2>&1 & echo $!",
                 binary_path, binary_name
             );
-            
+
             let (exit_code, stdout, stderr) = self.exec_ssh(ssh, &start_cmd).await?;
 
             if exit_code == 0 {
@@ -294,19 +331,26 @@ impl PortalDeployer for IonChannelDeployer {
     async fn deploy(&self, target: &Target, config: DeployConfig) -> Result<Deployment> {
         let mut ssh = self.connect_ssh(target).await?;
 
-        info!("Deploying ionChannel to {}@{}", target.username, target.host);
+        info!(
+            "Deploying ionChannel to {}@{}",
+            target.username, target.host
+        );
 
         // Phase 1: Install dependencies
-        self.install_dependencies(&mut ssh, &config.dependencies).await?;
+        self.install_dependencies(&mut ssh, &config.dependencies)
+            .await?;
 
         // Phase 2: Clone source
         let work_dir = self.clone_source(&mut ssh).await?;
 
         // Phase 3: Build crates
-        self.build_crates(&mut ssh, &work_dir, &config.crates).await?;
+        self.build_crates(&mut ssh, &work_dir, &config.crates)
+            .await?;
 
         // Phase 4: Start services
-        let deployed_services = self.start_services(&mut ssh, &work_dir, &config.crates).await?;
+        let deployed_services = self
+            .start_services(&mut ssh, &work_dir, &config.crates)
+            .await?;
 
         info!("ionChannel deployment complete!");
 

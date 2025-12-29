@@ -205,9 +205,11 @@ mod tests {
     fn test_capability_discovery() {
         let server = McpServer::new();
         let caps = server.discover_capabilities();
-        
+
         // Verify primal principle: server knows its own capabilities
         assert!(caps.capabilities.contains(&"vm-provisioning".to_string()));
-        assert!(caps.capabilities.contains(&"remote-desktop-validation".to_string()));
+        assert!(caps
+            .capabilities
+            .contains(&"remote-desktop-validation".to_string()));
     }
 }

@@ -2,7 +2,7 @@
 //!
 //! These tests verify the end-to-end autonomous provisioning flow.
 
-use ion_deploy::autonomous::{AutonomousProvisioner, AutonomousProvisionConfig};
+use ion_deploy::autonomous::{AutonomousProvisionConfig, AutonomousProvisioner};
 use ion_deploy::cloud_init::CloudInitBuilder;
 use ion_deploy::ssh_keys::SshKeyManager;
 use std::path::PathBuf;
@@ -53,14 +53,12 @@ async fn test_autonomous_config_builder() {
 #[tokio::test]
 async fn test_multiple_concurrent_key_generation() {
     let manager = SshKeyManager::new();
-    
+
     // Generate 10 keys concurrently
     let handles: Vec<_> = (0..10)
         .map(|i| {
             let mgr = manager.clone();
-            tokio::spawn(async move {
-                mgr.generate_key_pair(&format!("concurrent_{}", i)).await
-            })
+            tokio::spawn(async move { mgr.generate_key_pair(&format!("concurrent_{}", i)).await })
         })
         .collect();
 
@@ -72,7 +70,7 @@ async fn test_multiple_concurrent_key_generation() {
 
     // All should succeed and be unique
     assert_eq!(results.len(), 10);
-    
+
     for i in 0..results.len() {
         for j in (i + 1)..results.len() {
             assert_ne!(results[i].public_key, results[j].public_key);
@@ -120,7 +118,7 @@ async fn test_cloud_init_and_metadata_integration() {
 fn test_autonomous_provisioner_destroy_is_safe() {
     // Verify that destroy can be called even with invalid config
     let runtime = tokio::runtime::Runtime::new().unwrap();
-    
+
     runtime.block_on(async {
         let config = AutonomousProvisionConfig {
             vm_name: "nonexistent-vm".to_string(),
@@ -129,10 +127,9 @@ fn test_autonomous_provisioner_destroy_is_safe() {
         };
 
         let provisioner = AutonomousProvisioner::new(config);
-        
+
         // Should not panic or fail
         let result = provisioner.destroy().await;
         assert!(result.is_ok());
     });
 }
-

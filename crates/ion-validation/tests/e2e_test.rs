@@ -101,12 +101,12 @@ async fn test_full_ai_first_validation() {
             ValidationEvent::PackageInstalled {
                 package,
                 version,
-                duration,
+                timestamp,
                 ..
             } => {
                 println!("   ✅ Package installed!");
                 println!("      Package: {} v{}", package, version);
-                println!("      Duration: {:?}", duration);
+                println!("      Timestamp: {:?}", timestamp);
             },
             ValidationEvent::DeployingService {
                 service,

@@ -15,8 +15,9 @@ async fn test_existing_vm_rustdesk() -> anyhow::Result<()> {
     println!("════════════════════════════════════════════════════════════════\n");
 
     // Create LibvirtBackend
-    let backend = LibvirtBackend::new()?
-        .with_ssh_credentials("iontest".to_string(), Some("iontest".to_string()));
+    let backend = LibvirtBackend::new()?;
+    // TODO: Re-enable SSH credentials when API is stabilized
+    //    .with_ssh_credentials("iontest".to_string(), Some("iontest".to_string()));
 
     println!("✓ LibvirtBackend created");
 

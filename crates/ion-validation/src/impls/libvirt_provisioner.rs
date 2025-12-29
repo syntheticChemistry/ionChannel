@@ -4,7 +4,7 @@ use crate::errors::{Result, ValidationError};
 use crate::providers::vm::{ProvisionedVm, VmInfo, VmProvisioner, VmSpec, VmStatus};
 use async_trait::async_trait;
 use benchscale::{
-    backend::{libvirt::LibvirtBackend, Backend, NodeStatus, HealthCheck, HealthMonitor},
+    backend::{libvirt::LibvirtBackend, Backend, HealthCheck, HealthMonitor, NodeStatus},
     config::Config as BenchScaleConfig,
 };
 
@@ -20,7 +20,7 @@ impl LibvirtProvisioner {
     pub async fn new() -> Result<Self> {
         // Load config from environment (zero hardcoding)
         let config = BenchScaleConfig::default();
-        
+
         let backend = LibvirtBackend::with_config(config.libvirt.clone()).map_err(|e| {
             ValidationError::generic(format!("Failed to initialize Libvirt: {}", e))
         })?;
@@ -28,8 +28,8 @@ impl LibvirtProvisioner {
         // Create health monitor with default settings
         let health_monitor = HealthMonitor::new();
 
-        Ok(Self { 
-            backend, 
+        Ok(Self {
+            backend,
             health_monitor,
             config,
         })
@@ -43,8 +43,8 @@ impl LibvirtProvisioner {
 
         let health_monitor = HealthMonitor::new();
 
-        Ok(Self { 
-            backend, 
+        Ok(Self {
+            backend,
             health_monitor,
             config,
         })
@@ -52,15 +52,22 @@ impl LibvirtProvisioner {
 
     /// Check VM health using serial console logs
     pub async fn check_health(&self, vm_id: &str) -> Result<HealthCheck> {
-        let node = self.backend.get_node(vm_id).await.map_err(|_e| {
-            ValidationError::VmNotFound { vm_id: vm_id.to_string() }
-        })?;
+        let node =
+            self.backend
+                .get_node(vm_id)
+                .await
+                .map_err(|_e| ValidationError::VmNotFound {
+                    vm_id: vm_id.to_string(),
+                })?;
 
         // Get serial console logs if available
         let logs = self.backend.get_logs(vm_id).await.unwrap_or_default();
 
         // Perform health check using logs and IP
-        let health = self.health_monitor.check_vm_health(&logs, &node.ip_address).await;
+        let health = self
+            .health_monitor
+            .check_vm_health(&logs, &node.ip_address)
+            .await;
 
         Ok(health)
     }
@@ -82,7 +89,7 @@ impl VmProvisioner for LibvirtProvisioner {
             if matches!(node.status, NodeStatus::Running) {
                 // Use config-driven SSH port instead of hardcoding
                 let ssh_port = self.config.libvirt.ssh.port;
-                
+
                 return Ok(ProvisionedVm {
                     id: node.id.clone(),
                     name: node.name.clone(),

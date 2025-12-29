@@ -57,7 +57,7 @@ pub trait VmBackendProvider: Send + Sync {
     fn name(&self) -> &str;
 
     /// Check if this provider is available in the current environment
-    /// 
+    ///
     /// This performs fast checks (env vars, command existence) without
     /// actually connecting to services
     async fn is_available(&self) -> bool;
@@ -124,7 +124,10 @@ impl VmBackendRegistry {
     }
 
     /// Find all providers that offer a specific capability
-    pub async fn find_by_capability(&self, capability: &VmCapability) -> Vec<Arc<dyn VmBackendProvider>> {
+    pub async fn find_by_capability(
+        &self,
+        capability: &VmCapability,
+    ) -> Vec<Arc<dyn VmBackendProvider>> {
         let providers = self.providers.read().await;
         providers
             .iter()
@@ -169,13 +172,15 @@ impl VmBackendRegistry {
         // Filter to only available providers
         results
             .into_iter()
-            .filter_map(|(provider, available)| {
-                if available {
-                    Some(provider)
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(provider, available)| {
+                    if available {
+                        Some(provider)
+                    } else {
+                        None
+                    }
+                },
+            )
             .collect()
     }
 
@@ -214,7 +219,9 @@ impl VmBackendRegistry {
     }
 
     /// Create a provisioner from the best available provider
-    pub async fn create_best_provisioner(&self) -> Result<Arc<dyn crate::providers::vm::VmProvisioner>> {
+    pub async fn create_best_provisioner(
+        &self,
+    ) -> Result<Arc<dyn crate::providers::vm::VmProvisioner>> {
         let provider = self.find_best().await.ok_or_else(|| {
             crate::errors::ValidationError::generic("No VM backend providers available")
         })?;
@@ -343,7 +350,9 @@ mod tests {
 
         registry.register(provider).await;
 
-        let found = registry.find_by_capability(&VmCapability::SerialConsole).await;
+        let found = registry
+            .find_by_capability(&VmCapability::SerialConsole)
+            .await;
         assert_eq!(found.len(), 1);
         assert_eq!(found[0].id(), "test");
     }
@@ -409,4 +418,3 @@ mod tests {
         assert_eq!(best.unwrap().id(), "best");
     }
 }
-

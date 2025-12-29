@@ -112,11 +112,7 @@ impl CloudInitBuilder {
 
     /// Add a user with SSH key for autonomous access.
     #[must_use]
-    pub fn add_user(
-        mut self,
-        username: impl Into<String>,
-        ssh_public_keys: Vec<String>,
-    ) -> Self {
+    pub fn add_user(mut self, username: impl Into<String>, ssh_public_keys: Vec<String>) -> Self {
         self.config.users.push(CloudInitUser {
             name: username.into(),
             groups: Some(vec!["sudo".to_string(), "docker".to_string()]),
@@ -207,7 +203,10 @@ impl Default for CloudInitBuilder {
 ///
 /// Returns an error if writing fails.
 pub fn create_meta_data(instance_id: &str, path: &Path) -> Result<()> {
-    let meta_data = format!("instance-id: {}\nlocal-hostname: {}\n", instance_id, instance_id);
+    let meta_data = format!(
+        "instance-id: {}\nlocal-hostname: {}\n",
+        instance_id, instance_id
+    );
     fs::write(path, meta_data).context("Failed to write cloud-init meta-data")?;
     info!("Wrote cloud-init meta-data to {}", path.display());
     Ok(())
@@ -274,12 +273,10 @@ mod tests {
 
     #[test]
     fn test_cloud_init_yaml_generation() {
-        let builder = CloudInitBuilder::new()
-            .hostname("test-vm")
-            .add_user(
-                "testuser",
-                vec!["ssh-rsa AAAAB3NzaC1yc2EA... test@test".to_string()],
-            );
+        let builder = CloudInitBuilder::new().hostname("test-vm").add_user(
+            "testuser",
+            vec!["ssh-rsa AAAAB3NzaC1yc2EA... test@test".to_string()],
+        );
 
         let yaml = builder.build_yaml().expect("Failed to generate YAML");
 
@@ -322,9 +319,7 @@ mod tests {
             owner: Some("root:root".to_string()),
         };
 
-        let config = CloudInitBuilder::new()
-            .add_file(file.clone())
-            .build();
+        let config = CloudInitBuilder::new().add_file(file.clone()).build();
 
         assert_eq!(config.write_files.len(), 1);
         assert_eq!(config.write_files[0].path, "/tmp/test.txt");
@@ -333,9 +328,7 @@ mod tests {
 
     #[test]
     fn test_cloud_init_hostname_sets_fqdn() {
-        let config = CloudInitBuilder::new()
-            .hostname("myvm")
-            .build();
+        let config = CloudInitBuilder::new().hostname("myvm").build();
 
         assert_eq!(config.hostname, Some("myvm".to_string()));
         assert_eq!(config.fqdn, Some("myvm.local".to_string()));
@@ -346,9 +339,7 @@ mod tests {
         let config_disabled = CloudInitBuilder::new().build();
         assert!(!config_disabled.ssh_pwauth);
 
-        let config_enabled = CloudInitBuilder::new()
-            .enable_password_auth(true)
-            .build();
+        let config_enabled = CloudInitBuilder::new().enable_password_auth(true).build();
         assert!(config_enabled.ssh_pwauth);
     }
 
@@ -357,9 +348,7 @@ mod tests {
         let config_disabled = CloudInitBuilder::new().build();
         assert!(!config_disabled.package_upgrade);
 
-        let config_enabled = CloudInitBuilder::new()
-            .enable_package_upgrade(true)
-            .build();
+        let config_enabled = CloudInitBuilder::new().enable_package_upgrade(true).build();
         assert!(config_enabled.package_upgrade);
     }
 
@@ -372,7 +361,9 @@ mod tests {
             .hostname("test-vm")
             .add_user("testuser", vec!["ssh-rsa test".to_string()]);
 
-        builder.build_to_file(&user_data_path).expect("Failed to write file");
+        builder
+            .build_to_file(&user_data_path)
+            .expect("Failed to write file");
 
         assert!(user_data_path.exists());
 
@@ -390,7 +381,10 @@ mod tests {
             .add_user("admin", vec!["key".to_string()])
             .build();
 
-        assert_eq!(config.users[0].sudo, Some("ALL=(ALL) NOPASSWD:ALL".to_string()));
+        assert_eq!(
+            config.users[0].sudo,
+            Some("ALL=(ALL) NOPASSWD:ALL".to_string())
+        );
         assert_eq!(config.users[0].lock_passwd, Some(true));
     }
 
@@ -434,8 +428,8 @@ mod tests {
         let yaml = builder.build_yaml().expect("Failed to generate YAML");
 
         // Parse it back to verify it's valid YAML
-        let parsed: serde_yaml::Value = serde_yaml::from_str(&yaml)
-            .expect("Generated YAML is not valid");
+        let parsed: serde_yaml::Value =
+            serde_yaml::from_str(&yaml).expect("Generated YAML is not valid");
 
         assert!(parsed.get("hostname").is_some());
         assert!(parsed.get("users").is_some());
@@ -443,4 +437,3 @@ mod tests {
         assert!(parsed.get("runcmd").is_some());
     }
 }
-

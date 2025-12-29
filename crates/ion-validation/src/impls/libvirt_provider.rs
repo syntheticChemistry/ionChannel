@@ -6,13 +6,15 @@ use std::sync::Arc;
 use crate::{
     errors::Result,
     providers::{
-        backend_discovery::{ProviderHealth, ResourceStatus, VmBackendProvider, VmCapability, VmType},
+        backend_discovery::{
+            ProviderHealth, ResourceStatus, VmBackendProvider, VmCapability, VmType,
+        },
         vm::VmProvisioner,
     },
 };
 
 use benchscale::{
-    backend::{Backend, libvirt::LibvirtBackend},
+    backend::{libvirt::LibvirtBackend, Backend},
     config::Config as BenchScaleConfig,
 };
 
@@ -125,14 +127,16 @@ impl VmBackendProvider for LibvirtProvider {
         let (healthy, resources) = match backend_result {
             Ok(backend) => {
                 let is_healthy = backend.is_available().await.unwrap_or(false);
-                
+
                 // Try to get resource status
                 let res = if is_healthy {
                     // Try to list VMs in default network
                     if let Ok(nodes) = backend.list_nodes("default").await {
                         let vms_running = nodes
                             .iter()
-                            .filter(|n| matches!(n.status, benchscale::backend::NodeStatus::Running))
+                            .filter(|n| {
+                                matches!(n.status, benchscale::backend::NodeStatus::Running)
+                            })
                             .count();
 
                         ResourceStatus {
@@ -149,11 +153,11 @@ impl VmBackendProvider for LibvirtProvider {
                 };
 
                 (is_healthy, res)
-            }
+            },
             Err(e) => {
                 warnings.push(format!("Cannot connect to libvirt: {}", e));
                 (false, ResourceStatus::default())
-            }
+            },
         };
 
         Ok(ProviderHealth {
@@ -165,9 +169,9 @@ impl VmBackendProvider for LibvirtProvider {
     }
 
     async fn create_provisioner(&self) -> Result<Arc<dyn VmProvisioner>> {
-        let provisioner = crate::impls::libvirt_provisioner::LibvirtProvisioner::with_config(
-            self.config.clone()
-        ).await?;
+        let provisioner =
+            crate::impls::libvirt_provisioner::LibvirtProvisioner::with_config(self.config.clone())
+                .await?;
 
         Ok(Arc::new(provisioner))
     }
@@ -212,4 +216,3 @@ mod tests {
         println!("Warnings: {:?}", health.warnings);
     }
 }
-

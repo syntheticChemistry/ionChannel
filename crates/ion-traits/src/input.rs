@@ -79,7 +79,7 @@ bitflags! {
         const RELATIVE_POINTER = 1 << 4;
         /// Multi-touch is supported
         const MULTI_TOUCH = 1 << 5;
-        
+
         /// Standard desktop input (keyboard + pointer)
         const STANDARD = Self::KEYBOARD.bits() | Self::POINTER.bits() | Self::RELATIVE_POINTER.bits();
         /// Full desktop with absolute positioning
@@ -124,7 +124,7 @@ impl InputCapabilities {
     #[must_use]
     pub fn description(&self) -> String {
         let mut parts = Vec::new();
-        
+
         if self.has_keyboard() {
             parts.push("keyboard");
         }
@@ -137,7 +137,7 @@ impl InputCapabilities {
         if self.has_absolute_pointer() {
             parts.push("absolute");
         }
-        
+
         if parts.is_empty() {
             "no input".to_string()
         } else {
@@ -353,10 +353,10 @@ mod tests {
         assert!(caps.has_keyboard());
         assert!(caps.has_pointer());
         assert!(!caps.has_touch());
-        
+
         let full = InputCapabilities::FULL_DESKTOP;
         assert!(full.has_absolute_pointer());
-        
+
         let desc = caps.description();
         assert!(desc.contains("keyboard"));
         assert!(desc.contains("pointer"));

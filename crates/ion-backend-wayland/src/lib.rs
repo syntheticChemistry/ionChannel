@@ -267,3 +267,5 @@ mod tests {
         assert!(caps.backend_name.contains("Wayland"));
     }
 }
+#[cfg(test)]
+mod input_tests;

@@ -90,6 +90,7 @@ THEN:   RustDesk and similar tools cannot inject mouse/keyboard on COSMIC
 | 04 | Pre-Login RDP | `pop-os/cosmic-greeter` | `04_PRELOGIN_RDP.md` | P2 |
 | 05 | Ecosystem Integration | `ecoPrimals/songBird` | `05_ECOSYSTEM_INTEGRATION.md` | P1 |
 | 06 | Platform Agnosticism | (future backends) | `06_PLATFORM_AGNOSTICISM.md` | P2 |
+| **07** | **Capability-Based Security** | `ionChannel` (architecture) | `07_CAPABILITY_BASED_SECURITY.md` | **P0-ARCH** |
 
 ## Success Criteria
 
@@ -167,11 +168,13 @@ attribution:
 | Phase | Deliverable | Duration | Dependencies |
 |-------|-------------|----------|--------------|
 | 0 | Research & Setup | ✅ Done | — |
-| 1 | RemoteDesktop Portal | 2 weeks | — |
-| 2 | Compositor Input Injection | 1 week | Phase 1 |
-| 3 | RustDesk Testing | 1 week | Phase 2 |
-| 4 | Pre-Login RDP | 2 weeks | Phase 3 |
-| 5 | Upstream PRs | 1 week | Phase 3/4 |
+| **0b** | **Capability System Design** | ✅ **Done** | **—** |
+| 1 | Capability-Based Security | 16 weeks | Phase 0b |
+| 2 | RemoteDesktop Portal | 2 weeks | Phase 1 |
+| 3 | Compositor Input Injection | 1 week | Phase 2 |
+| 4 | RustDesk Testing | 1 week | Phase 3 |
+| 5 | Pre-Login RDP | 2 weeks | Phase 4 |
+| 6 | Upstream PRs | 1 week | Phase 4/5 |
 
 ## File Manifest
 

@@ -16,7 +16,8 @@ use tokio::sync::RwLock;
 use crate::backend::{BackendCapabilities, CompositorBackend, DisplayServerType};
 
 /// Type alias for the complex return type of `create_backend`.
-type CreateBackendFuture<'a> = Pin<Box<dyn Future<Output = Option<Arc<dyn CompositorBackend>>> + Send + 'a>>;
+type CreateBackendFuture<'a> =
+    Pin<Box<dyn Future<Output = Option<Arc<dyn CompositorBackend>>> + Send + 'a>>;
 
 /// A capability that a backend can provide.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -92,9 +93,9 @@ impl BackendRegistry {
     /// **Performance**: Checks availability in parallel for maximum concurrency.
     pub async fn find_available(&self) -> Vec<Arc<dyn BackendProvider>> {
         use futures::future::join_all;
-        
+
         let providers = self.providers.read().await;
-        
+
         // Create parallel availability checks
         let checks: Vec<_> = providers
             .iter()
@@ -106,20 +107,22 @@ impl BackendRegistry {
                 }
             })
             .collect();
-        
+
         // Execute all checks concurrently
         let results = join_all(checks).await;
-        
+
         // Filter to only available providers
         results
             .into_iter()
-            .filter_map(|(provider, available)| {
-                if available {
-                    Some(provider)
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(provider, available)| {
+                    if available {
+                        Some(provider)
+                    } else {
+                        None
+                    }
+                },
+            )
             .collect()
     }
 
@@ -131,7 +134,7 @@ impl BackendRegistry {
     /// **Performance**: All providers checked concurrently, result selected by priority.
     pub async fn find_best(&self) -> Option<Arc<dyn BackendProvider>> {
         use futures::future::join_all;
-        
+
         let providers = self.providers.read().await;
 
         // Check all providers in parallel

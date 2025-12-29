@@ -5,9 +5,9 @@
 //!
 //! Run with: `cargo bench`
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use ion_core::backend::{BackendCapabilities, DisplayServerType};
-use ion_core::discovery::{BackendRegistry, Capability};
+use ion_core::discovery::BackendRegistry;
 use ion_core::event::{InputEvent, KeyState};
 use ion_core::session::SessionId;
 use std::sync::Arc;
@@ -44,7 +44,7 @@ fn bench_event_operations(c: &mut Criterion) {
     });
 
     let event = InputEvent::PointerMotion { dx: 10.0, dy: 20.0 };
-    
+
     c.bench_function("event_clone", |b| {
         b.iter(|| {
             black_box(event.clone());
@@ -61,7 +61,7 @@ fn bench_session_operations(c: &mut Criterion) {
     });
 
     let session_id = SessionId::new("test_session");
-    
+
     c.bench_function("session_id_to_string", |b| {
         b.iter(|| {
             black_box(session_id.to_string());
@@ -72,7 +72,7 @@ fn bench_session_operations(c: &mut Criterion) {
 /// Benchmark backend registry operations.
 fn bench_registry_operations(c: &mut Criterion) {
     let rt = Runtime::new().unwrap();
-    
+
     c.bench_function("registry_create", |b| {
         b.iter(|| {
             black_box(BackendRegistry::new());
@@ -80,7 +80,7 @@ fn bench_registry_operations(c: &mut Criterion) {
     });
 
     let registry = Arc::new(BackendRegistry::new());
-    
+
     c.bench_function("registry_query_capabilities", |b| {
         b.to_async(&rt).iter(|| {
             let reg = Arc::clone(&registry);
@@ -95,10 +95,10 @@ fn bench_registry_operations(c: &mut Criterion) {
 fn bench_parallel_discovery(c: &mut Criterion) {
     let rt = Runtime::new().unwrap();
     let registry = Arc::new(BackendRegistry::new());
-    
+
     // Note: With no providers registered, this benchmarks the overhead
     // of the parallel discovery mechanism itself
-    
+
     c.bench_function("parallel_find_available", |b| {
         b.to_async(&rt).iter(|| {
             let reg = Arc::clone(&registry);
@@ -107,7 +107,7 @@ fn bench_parallel_discovery(c: &mut Criterion) {
             }
         });
     });
-    
+
     c.bench_function("parallel_find_best", |b| {
         b.to_async(&rt).iter(|| {
             let reg = Arc::clone(&registry);
@@ -121,9 +121,9 @@ fn bench_parallel_discovery(c: &mut Criterion) {
 /// Benchmark with varying numbers of providers.
 fn bench_discovery_scaling(c: &mut Criterion) {
     let rt = Runtime::new().unwrap();
-    
+
     let mut group = c.benchmark_group("discovery_scaling");
-    
+
     for num_providers in [1, 2, 5, 10].iter() {
         group.bench_with_input(
             BenchmarkId::from_parameter(num_providers),
@@ -140,7 +140,7 @@ fn bench_discovery_scaling(c: &mut Criterion) {
             },
         );
     }
-    
+
     group.finish();
 }
 
@@ -155,4 +155,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

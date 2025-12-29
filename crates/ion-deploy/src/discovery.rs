@@ -96,14 +96,15 @@ impl VmDiscovery {
         // Browse for common VM services
         let service_types = vec![
             "_ssh._tcp.local.",
-            "_workstation._tcp.local.", 
+            "_workstation._tcp.local.",
             "_device-info._tcp.local.",
         ];
 
         for service_type in service_types {
             debug!("Browsing for {}", service_type);
-            
-            let receiver = mdns.browse(service_type)
+
+            let receiver = mdns
+                .browse(service_type)
                 .map_err(|e| anyhow::anyhow!("Browse failed: {}", e))?;
 
             // Listen for a limited time
@@ -116,12 +117,12 @@ impl VmDiscovery {
                         match event {
                             Ok(ServiceEvent::ServiceResolved(info)) => {
                                 debug!("Resolved mDNS service: {}", info.get_fullname());
-                                
+
                                 // Extract IP addresses
                                 for addr in info.get_addresses() {
                                     if let IpAddr::V4(ipv4) = addr {
                                         let name = info.get_hostname().trim_end_matches('.').to_string();
-                                        
+
                                         // For mDNS, check if name looks like a VM
                                         if Self::is_vm_name(&name) {
                                             vms.push(VmInfo {
@@ -232,7 +233,7 @@ impl VmDiscovery {
 
         // Get local network ranges to scan
         let ranges = Self::get_local_network_ranges().await?;
-        
+
         let mut all_hosts = Vec::new();
         for range in ranges {
             all_hosts.extend(Self::expand_range(&range));
@@ -247,7 +248,7 @@ impl VmDiscovery {
 
         // Parallel ping sweep
         let client = Client::new(&Config::default())?;
-        
+
         let live_hosts: Vec<IpAddr> = stream::iter(all_hosts)
             .map(|ip| {
                 let client_clone = client.clone();
@@ -302,7 +303,7 @@ impl VmDiscovery {
         // Common local network ranges for VMs
         ranges.push("192.168.122.0/24".to_string()); // libvirt default
         ranges.push("192.168.100.0/24".to_string()); // common VM network
-        
+
         // Would enumerate actual local interfaces here
         // For now, just return common VM networks
 
@@ -314,7 +315,7 @@ impl VmDiscovery {
         // Parse CIDR and expand to individual IPs
         // Simplified implementation - full version would use ipnet crate
         let mut ips = Vec::new();
-        
+
         if let Some((base, suffix)) = cidr.split_once('/') {
             if let Ok(base_ip) = base.parse::<Ipv4Addr>() {
                 let octets = base_ip.octets();
@@ -327,7 +328,7 @@ impl VmDiscovery {
                 }
             }
         }
-        
+
         ips
     }
 

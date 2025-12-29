@@ -69,13 +69,10 @@ impl SshKeyManager {
         info!("🔑 Generating autonomous SSH key pair for {}", identifier);
 
         // Create temp directory if it doesn't exist
-        fs::create_dir_all(&self.temp_dir)
-            .context("Failed to create temporary key directory")?;
+        fs::create_dir_all(&self.temp_dir).context("Failed to create temporary key directory")?;
 
         let private_key_path = self.temp_dir.join(format!("id_ed25519_{}", identifier));
-        let public_key_path = self
-            .temp_dir
-            .join(format!("id_ed25519_{}.pub", identifier));
+        let public_key_path = self.temp_dir.join(format!("id_ed25519_{}.pub", identifier));
 
         // Generate ed25519 key (most secure and modern)
         let output = Command::new("ssh-keygen")
@@ -101,13 +98,10 @@ impl SshKeyManager {
         let private_key = fs::read_to_string(&private_key_path)
             .context("Failed to read generated private key")?;
 
-        let public_key = fs::read_to_string(&public_key_path)
-            .context("Failed to read generated public key")?;
+        let public_key =
+            fs::read_to_string(&public_key_path).context("Failed to read generated public key")?;
 
-        info!(
-            "✅ Generated SSH key pair: {}",
-            private_key_path.display()
-        );
+        info!("✅ Generated SSH key pair: {}", private_key_path.display());
 
         Ok(SshKeyPair {
             private_key,
@@ -126,19 +120,17 @@ impl SshKeyManager {
         debug!("Loading existing SSH key pair for {}", identifier);
 
         let private_key_path = self.temp_dir.join(format!("id_ed25519_{}", identifier));
-        let public_key_path = self
-            .temp_dir
-            .join(format!("id_ed25519_{}.pub", identifier));
+        let public_key_path = self.temp_dir.join(format!("id_ed25519_{}.pub", identifier));
 
         if !private_key_path.exists() {
             anyhow::bail!("Private key not found: {}", private_key_path.display());
         }
 
-        let private_key = fs::read_to_string(&private_key_path)
-            .context("Failed to read private key")?;
+        let private_key =
+            fs::read_to_string(&private_key_path).context("Failed to read private key")?;
 
-        let public_key = fs::read_to_string(&public_key_path)
-            .context("Failed to read public key")?;
+        let public_key =
+            fs::read_to_string(&public_key_path).context("Failed to read public key")?;
 
         Ok(SshKeyPair {
             private_key,
@@ -241,9 +233,15 @@ mod tests {
     #[tokio::test]
     async fn test_multiple_key_generation() {
         let manager = SshKeyManager::new();
-        
-        let key1 = manager.generate_key_pair("test1").await.expect("Failed to generate key1");
-        let key2 = manager.generate_key_pair("test2").await.expect("Failed to generate key2");
+
+        let key1 = manager
+            .generate_key_pair("test1")
+            .await
+            .expect("Failed to generate key1");
+        let key2 = manager
+            .generate_key_pair("test2")
+            .await
+            .expect("Failed to generate key2");
 
         // Keys should be different
         assert_ne!(key1.public_key, key2.public_key);
@@ -258,17 +256,23 @@ mod tests {
     async fn test_key_load_after_generation() {
         let manager = SshKeyManager::new();
         let identifier = "test_load";
-        
+
         // Generate key
-        let generated = manager.generate_key_pair(identifier).await.expect("Failed to generate");
+        let generated = manager
+            .generate_key_pair(identifier)
+            .await
+            .expect("Failed to generate");
         let public_key_original = generated.public_key.clone();
-        
+
         // Don't drop - keep files around
         let _keep = generated;
 
         // Load the same key
-        let loaded = manager.load_key_pair(identifier).await.expect("Failed to load");
-        
+        let loaded = manager
+            .load_key_pair(identifier)
+            .await
+            .expect("Failed to load");
+
         // Should be identical
         assert_eq!(public_key_original, loaded.public_key);
     }
@@ -276,7 +280,7 @@ mod tests {
     #[tokio::test]
     async fn test_load_nonexistent_key() {
         let manager = SshKeyManager::new();
-        
+
         let result = manager.load_key_pair("nonexistent").await;
         assert!(result.is_err());
     }
@@ -285,16 +289,16 @@ mod tests {
     fn test_write_public_key() {
         let temp_dir = std::env::temp_dir();
         let key_path = temp_dir.join("test_pubkey.pub");
-        
+
         let public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITest test@test";
-        
+
         write_public_key(public_key, &key_path).expect("Failed to write key");
-        
+
         assert!(key_path.exists());
-        
+
         let content = fs::read_to_string(&key_path).expect("Failed to read key");
         assert_eq!(content, public_key);
-        
+
         // Cleanup
         let _ = fs::remove_file(&key_path);
     }
@@ -304,14 +308,14 @@ mod tests {
         let temp_dir = std::env::temp_dir();
         let priv_path = temp_dir.join("test_drop_priv");
         let pub_path = temp_dir.join("test_drop_pub");
-        
+
         // Create dummy files
         fs::write(&priv_path, "private").expect("Failed to write private");
         fs::write(&pub_path, "public").expect("Failed to write public");
-        
+
         assert!(priv_path.exists());
         assert!(pub_path.exists());
-        
+
         {
             let _keypair = SshKeyPair {
                 private_key: "private".to_string(),
@@ -321,7 +325,7 @@ mod tests {
             };
             // Drop happens here
         }
-        
+
         // Files should be cleaned up
         assert!(!priv_path.exists());
         assert!(!pub_path.exists());
@@ -331,7 +335,7 @@ mod tests {
     async fn test_key_manager_default() {
         let manager1 = SshKeyManager::default();
         let manager2 = SshKeyManager::new();
-        
+
         // Should use same temp directory structure
         assert_eq!(manager1.temp_dir, manager2.temp_dir);
     }
@@ -339,24 +343,24 @@ mod tests {
     #[tokio::test]
     async fn test_concurrent_key_generation() {
         let manager = SshKeyManager::new();
-        
+
         // Generate multiple keys concurrently
         let handles: Vec<_> = (0..5)
             .map(|i| {
                 let mgr = manager.clone();
-                tokio::spawn(async move {
-                    mgr.generate_key_pair(&format!("concurrent_{}", i)).await
-                })
+                tokio::spawn(
+                    async move { mgr.generate_key_pair(&format!("concurrent_{}", i)).await },
+                )
             })
             .collect();
-        
+
         // Wait for all to complete
         let results: Vec<_> = futures::future::join_all(handles)
             .await
             .into_iter()
             .map(|r| r.expect("Task panicked").expect("Key generation failed"))
             .collect();
-        
+
         // All should have unique keys
         assert_eq!(results.len(), 5);
         for i in 0..results.len() {
@@ -366,4 +370,3 @@ mod tests {
         }
     }
 }
-

@@ -124,24 +124,27 @@ async fn execute_validation(
     // Phase 2: Remote Desktop Installation
     let mut rustdesk_id = "UNAVAILABLE".to_string();
     let mut installation_duration = Duration::from_secs(0);
-    
+
     if plan.install_remote_desktop {
         info!("Phase 2: Remote Desktop Installation");
         let install_start = Instant::now();
 
         // Create Target from provisioned VM
-        let vm_ip = provisioned_vm.ip.clone().ok_or_else(|| {
-            ValidationError::generic("VM has no IP address")
-        })?;
+        let vm_ip = provisioned_vm
+            .ip
+            .clone()
+            .ok_or_else(|| ValidationError::generic("VM has no IP address"))?;
 
         let target = Target {
             host: vm_ip.clone(),
             port: provisioned_vm.ssh_port,
-            username: plan.ssh_username.clone()
-                .unwrap_or_else(|| std::env::var("VM_SSH_USER").unwrap_or_else(|_| "ubuntu".to_string())),
+            username: plan.ssh_username.clone().unwrap_or_else(|| {
+                std::env::var("VM_SSH_USER").unwrap_or_else(|_| "ubuntu".to_string())
+            }),
             auth: SshAuth::Password {
-                password: plan.ssh_password.clone()
-                    .unwrap_or_else(|| std::env::var("VM_SSH_PASSWORD").unwrap_or_else(|_| "changeme".to_string())),
+                password: plan.ssh_password.clone().unwrap_or_else(|| {
+                    std::env::var("VM_SSH_PASSWORD").unwrap_or_else(|_| "changeme".to_string())
+                }),
             },
         };
 
@@ -152,11 +155,11 @@ async fn execute_validation(
         .ok();
 
         let remote_desktop = registry.discover_remote_desktop().await?;
-        
+
         match remote_desktop.install(&target).await {
             Ok(installation) => {
                 info!("RustDesk installed: version {}", installation.version);
-                
+
                 tx.send(ValidationEvent::PackageInstalled {
                     timestamp: Utc::now(),
                     package: "rustdesk".to_string(),
@@ -169,23 +172,23 @@ async fn execute_validation(
                     Ok(id) => {
                         rustdesk_id = id.clone();
                         info!("RustDesk ID: {}", id);
-                        
+
                         tx.send(ValidationEvent::RemoteDesktopReady {
                             timestamp: Utc::now(),
                             desktop_id: id,
                         })
                         .ok();
-                    }
+                    },
                     Err(e) => {
                         warn!("Failed to get RustDesk ID: {:?}", e);
                         rustdesk_id = "ERROR".to_string();
-                    }
+                    },
                 }
-            }
+            },
             Err(e) => {
                 error!("Failed to install RustDesk: {:?}", e);
                 return Err(e);
-            }
+            },
         }
 
         installation_duration = install_start.elapsed();
@@ -202,23 +205,26 @@ async fn execute_validation(
     // Phase 3: Portal Deployment
     let mut deployment_duration = Duration::from_secs(0);
     let mut phases_completed = if plan.install_remote_desktop { 2 } else { 1 };
-    
+
     if plan.deploy_portal {
         info!("Phase 3: Portal Deployment");
         let deploy_start = Instant::now();
 
-        let vm_ip = provisioned_vm.ip.clone().ok_or_else(|| {
-            ValidationError::generic("VM has no IP address")
-        })?;
+        let vm_ip = provisioned_vm
+            .ip
+            .clone()
+            .ok_or_else(|| ValidationError::generic("VM has no IP address"))?;
 
         let target = Target {
             host: vm_ip,
             port: provisioned_vm.ssh_port,
-            username: plan.ssh_username.clone()
-                .unwrap_or_else(|| std::env::var("VM_SSH_USER").unwrap_or_else(|_| "ubuntu".to_string())),
+            username: plan.ssh_username.clone().unwrap_or_else(|| {
+                std::env::var("VM_SSH_USER").unwrap_or_else(|_| "ubuntu".to_string())
+            }),
             auth: SshAuth::Password {
-                password: plan.ssh_password.clone()
-                    .unwrap_or_else(|| std::env::var("VM_SSH_PASSWORD").unwrap_or_else(|_| "changeme".to_string())),
+                password: plan.ssh_password.clone().unwrap_or_else(|| {
+                    std::env::var("VM_SSH_PASSWORD").unwrap_or_else(|_| "changeme".to_string())
+                }),
             },
         };
 
@@ -233,8 +239,11 @@ async fn execute_validation(
 
         match portal_deployer.deploy(&target, deploy_config).await {
             Ok(deployment) => {
-                info!("Portal deployed successfully: {} services", deployment.services.len());
-                
+                info!(
+                    "Portal deployed successfully: {} services",
+                    deployment.services.len()
+                );
+
                 tx.send(ValidationEvent::PortalDeployed {
                     timestamp: Utc::now(),
                     deployment_id: deployment.id.clone(),
@@ -250,21 +259,21 @@ async fn execute_validation(
                     match portal_deployer.verify(&deployment).await {
                         Ok(health) => {
                             info!("Portal verification: healthy={}", health.healthy);
-                            
+
                             tx.send(ValidationEvent::VerificationComplete {
                                 timestamp: Utc::now(),
                                 success: health.healthy,
                                 details: health.details.unwrap_or_default(),
                             })
                             .ok();
-                        }
+                        },
                         Err(e) => {
                             warn!("Portal verification failed: {:?}", e);
-                        }
+                        },
                     }
 
                     let verification_duration = verify_start.elapsed();
-                    
+
                     tx.send(ValidationEvent::PhaseComplete {
                         timestamp: Utc::now(),
                         phase: 4,
@@ -275,11 +284,11 @@ async fn execute_validation(
 
                     phases_completed += 1;
                 }
-            }
+            },
             Err(e) => {
                 error!("Failed to deploy portal: {:?}", e);
                 return Err(e);
-            }
+            },
         }
 
         deployment_duration = deploy_start.elapsed();
@@ -418,5 +427,85 @@ mod tests {
             .unwrap();
 
         assert!(plan.install_remote_desktop);
+    }
+
+    #[test]
+    fn test_orchestrator_creation() {
+        let orchestrator = ValidationOrchestrator::new();
+        // Verify creation works
+        drop(orchestrator);
+    }
+
+    #[test]
+    fn test_orchestrator_default() {
+        let _orchestrator = ValidationOrchestrator::default();
+        // Verify default trait implementation
+    }
+
+    #[test]
+    fn test_plan_builder_with_portal() {
+        let plan = ValidationPlan::builder()
+            .with_portal()
+            .build()
+            .unwrap();
+
+        assert!(plan.deploy_portal);
+    }
+
+    #[test]
+    fn test_plan_builder_with_e2e() {
+        let plan = ValidationPlan::builder()
+            .with_verification()
+            .build()
+            .unwrap();
+
+        assert!(plan.verify_e2e);
+    }
+
+    #[test]
+    fn test_plan_builder_with_ssh() {
+        let plan = ValidationPlan::builder()
+            .with_ssh_credentials("testuser".to_string(), "testpass".to_string())
+            .build()
+            .unwrap();
+
+        assert_eq!(plan.ssh_username.as_ref().unwrap(), "testuser");
+        assert_eq!(plan.ssh_password.as_ref().unwrap(), "testpass");
+    }
+
+    #[test]
+    fn test_plan_builder_full() {
+        let vm_spec = VmSpec::default();
+        let plan = ValidationPlan::builder()
+            .vm_spec(vm_spec)
+            .with_remote_desktop()
+            .with_portal()
+            .with_verification()
+            .with_ssh_credentials("admin".to_string(), "pass".to_string())
+            .build()
+            .unwrap();
+
+        assert!(plan.install_remote_desktop);
+        assert!(plan.deploy_portal);
+        assert!(plan.verify_e2e);
+        assert!(plan.ssh_username.is_some());
+    }
+
+    #[test]
+    fn test_plan_builder_with_capability() {
+        // Capability is a no-op (auto-discovery)
+        let plan = ValidationPlan::builder()
+            .with_capability("test_cap")
+            .build()
+            .unwrap();
+
+        // Just verify it doesn't panic
+        drop(plan);
+    }
+
+    #[test]
+    fn test_vm_spec_default() {
+        let spec = VmSpec::default();
+        assert!(!spec.name.is_empty());
     }
 }
