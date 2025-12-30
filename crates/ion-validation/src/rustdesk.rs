@@ -11,6 +11,63 @@ use std::time::Duration;
 
 use benchscale::backend::{Backend, LibvirtBackend};
 
+/// RustDesk constants
+pub mod constants {
+    /// Default RustDesk service port
+    pub const DEFAULT_PORT: u16 = 21118;
+    
+    /// RustDesk relay server port
+    pub const RELAY_PORT: u16 = 21119;
+    
+    /// Default RustDesk version
+    pub const DEFAULT_VERSION: &str = "1.2.3";
+}
+
+/// Discover RustDesk .deb package location using runtime discovery
+///
+/// Priority:
+/// 1. RUSTDESK_DEB_PATH environment variable
+/// 2. agentReagents/packages/ relative to workspace
+/// 3. Common system locations
+pub fn discover_rustdesk_deb() -> Result<PathBuf> {
+    // 1. Check environment variable (highest priority)
+    if let Ok(path) = std::env::var("RUSTDESK_DEB_PATH") {
+        let p = PathBuf::from(path);
+        if p.exists() {
+            return Ok(p);
+        }
+    }
+    
+    // 2. Check agentReagents relative to workspace root
+    if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        let workspace_root = PathBuf::from(manifest_dir);
+        
+        // Try ../agentReagents/packages/ (if ionChannel is sibling)
+        if let Some(parent) = workspace_root.parent() {
+            let reagents_path = parent.join("agentReagents/packages/rustdesk-1.2.3-x86_64.deb");
+            if reagents_path.exists() {
+                return Ok(reagents_path);
+            }
+        }
+    }
+    
+    // 3. Check common system locations
+    for base in &[
+        "/opt/agentReagents",
+        "/usr/local/share/agentReagents",
+        &format!("{}/agentReagents", std::env::var("HOME").unwrap_or_default()),
+    ] {
+        let path = PathBuf::from(base).join("packages/rustdesk-1.2.3-x86_64.deb");
+        if path.exists() {
+            return Ok(path);
+        }
+    }
+    
+    anyhow::bail!(
+        "RustDesk .deb not found. Set RUSTDESK_DEB_PATH environment variable or ensure agentReagents/packages/ exists"
+    )
+}
+
 /// RustDesk service configuration
 #[derive(Debug, Clone)]
 pub struct RustDeskConfig {
@@ -283,8 +340,9 @@ impl RustDeskValidator {
             )
             .await?;
 
-        if !result.stdout.contains("21118") {
-            anyhow::bail!("RustDesk not listening on port 21118");
+        let port_str = constants::DEFAULT_PORT.to_string();
+        if !result.stdout.contains(&port_str) {
+            anyhow::bail!("RustDesk not listening on port {}", constants::DEFAULT_PORT);
         }
 
         progress("Port is listening");
@@ -296,6 +354,12 @@ impl RustDeskValidator {
 
 /// Full RustDesk installation and configuration flow - PRODUCTION
 /// Uses pre-downloaded .deb from agentReagents following primal philosophy
+///
+/// # Runtime Discovery
+/// The RustDesk .deb is discovered at runtime using:
+/// 1. RUSTDESK_DEB_PATH environment variable
+/// 2. agentReagents/packages/ relative to workspace
+/// 3. Common system locations
 pub async fn setup_rustdesk_on_vm(
     backend: LibvirtBackend,
     vm_id: &str,
@@ -305,12 +369,16 @@ pub async fn setup_rustdesk_on_vm(
 ) -> Result<RustDeskConfig> {
     let validator = RustDeskValidator::new(backend, vm_id.to_string(), ssh_key_path).await?;
 
-    // Path to pre-downloaded RustDesk .deb in agentReagents
-    let deb_path = "/home/nestgate/Development/syntheticChemistry/agentReagents/debs/remote-desktop/rustdesk-1.2.3-x86_64.deb";
+    // Discover RustDesk .deb at runtime (no hardcoding)
+    progress("Discovering RustDesk .deb package...");
+    let deb_path = discover_rustdesk_deb()
+        .context("Failed to discover RustDesk .deb. Set RUSTDESK_DEB_PATH or ensure agentReagents/packages/ exists")?;
+    
+    progress(&format!("Found RustDesk at: {}", deb_path.display()));
 
-    // REAL installation using local .deb
+    // REAL installation using discovered .deb
     validator
-        .install(progress.clone(), deb_path)
+        .install(progress.clone(), deb_path.to_str().unwrap())
         .await
         .context("Failed to install RustDesk")?;
 
@@ -335,6 +403,6 @@ pub async fn setup_rustdesk_on_vm(
     Ok(RustDeskConfig {
         id,
         password: password.to_string(),
-        port: 21118,
+        port: constants::DEFAULT_PORT,
     })
 }
