@@ -108,8 +108,6 @@ impl CapabilityGrant {
 
     /// Check if grant has expired
     #[must_use]
-    /// Check if grant has expired
-    #[must_use]
     pub fn is_expired(&self) -> bool {
         if let Some(expires) = self.restrictions.expires_at {
             SystemTime::now() > expires

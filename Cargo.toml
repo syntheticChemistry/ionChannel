@@ -155,3 +155,23 @@ harness = false
 [[bench]]
 name = "core_operations"
 harness = false
+
+# Validation binaries
+[[bin]]
+name = "get-rustdesk-id"
+path = "src/bin/get-rustdesk-id.rs"
+
+[[bin]]
+name = "auto-generate-rustdesk-id"
+path = "src/bin/auto-generate-rustdesk-id.rs"
+required-features = ["benchscale"]
+
+[[bin]]
+name = "rustdesk-validation"
+path = "src/bin/rustdesk-validation.rs"
+required-features = ["benchscale"]
+
+[[bin]]
+name = "baseline-validation"
+path = "src/bin/baseline-validation.rs"
+required-features = ["benchscale"]

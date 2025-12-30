@@ -9,7 +9,7 @@ use anyhow::{Context, Result};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use benchscale::backend::{Backend, LibvirtBackend, NodeInfo};
+use benchscale::backend::{Backend, LibvirtBackend};
 
 /// RustDesk service configuration
 #[derive(Debug, Clone)]
@@ -111,7 +111,7 @@ impl RustDeskValidator {
         }
 
         progress("Installing RustDesk package");
-        let result = self
+        let _result = self
             .backend
             .exec_command(
                 &self.vm_id,
@@ -125,7 +125,7 @@ impl RustDeskValidator {
             )
             .await?;
 
-        // Ignore errors, fix dependencies next
+        // Intentionally ignore dpkg errors - apt-get install -f will fix dependencies
 
         progress("Fixing dependencies");
         let result = self

@@ -160,11 +160,20 @@ pub enum CapabilityProvider {
     /// Built into ionChannel
     Core,
     /// Loaded plugin
-    Plugin { name: String },
+    Plugin {
+        /// Plugin name
+        name: String
+    },
     /// AI agent
-    Agent { id: String },
+    Agent {
+        /// Agent identifier
+        id: String
+    },
     /// Application-defined
-    Application { app_id: String },
+    Application {
+        /// Application identifier
+        app_id: String
+    },
 }
 
 /// Deprecation information
